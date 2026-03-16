@@ -1,0 +1,71 @@
+package com.example.blogai.entities;
+
+import com.example.blogai.enums.BlogStatus;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "blogs", schema = "public", indexes = {
+        @Index(name = "idx_blogs_author",
+                columnList = "author_id"),
+        @Index(name = "idx_blogs_status_created",
+                columnList = "status, created_at")})
+public class Blog {
+    @Id
+    @ColumnDefault("gen_random_uuid()")
+    @Column(name = "id", nullable = false)
+    private UUID id;
+
+    @Size(max = 255)
+    @Column(name = "title")
+    private String title;
+
+    @NotNull
+    @Column(name = "content", nullable = false, length = Integer.MAX_VALUE)
+    private String content;
+
+    @Column(name = "summary", length = Integer.MAX_VALUE)
+    private String summary;
+
+    @Column(name = "cover_image_url", length = Integer.MAX_VALUE)
+    private String coverImageUrl;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
+
+    @ColumnDefault("'DRAFT'")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private BlogStatus status;
+
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "view_count", nullable = false)
+    private Integer viewCount;
+
+    @NotNull
+    @ColumnDefault("now()")
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
+
+    @NotNull
+    @ColumnDefault("now()")
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
+
+}
