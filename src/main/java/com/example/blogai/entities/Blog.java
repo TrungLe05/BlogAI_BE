@@ -6,9 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.*;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -25,6 +24,7 @@ public class Blog {
     @Id
     @ColumnDefault("gen_random_uuid()")
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Size(max = 255)
@@ -47,24 +47,23 @@ public class Blog {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @ColumnDefault("'DRAFT'")
-    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status", nullable = false)
-    private BlogStatus status;
+    private BlogStatus status = BlogStatus.DRAFT;
 
     @NotNull
     @ColumnDefault("0")
     @Column(name = "view_count", nullable = false)
     private Integer viewCount;
 
-    @NotNull
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
+    @CreationTimestamp
     private Instant createdAt;
 
-    @NotNull
     @ColumnDefault("now()")
     @Column(name = "updated_at", nullable = false)
+    @UpdateTimestamp
     private Instant updatedAt;
 
 

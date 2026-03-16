@@ -51,7 +51,13 @@ public enum ErrorCode {
 
     // ===== COMMENT =====
     COMMENT_NOT_FOUND(5001, "Comment not found", HttpStatus.NOT_FOUND),
-    COMMENT_ACCESS_DENIED(5002, "You do not have permission to modify this comment", HttpStatus.FORBIDDEN);
+    COMMENT_ACCESS_DENIED(5002, "You do not have permission to modify this comment", HttpStatus.FORBIDDEN),
+
+    //====== BLOG ======
+    BLOG_NOT_EXISTED(6001, "blog not existed", HttpStatus.NOT_FOUND),
+    BLOG_CONTENT_REQUIRED(6002, "content's blog is required", HttpStatus.BAD_REQUEST),
+    BLOG_COVER_IMAGE_REQUIRED(6003, "cover image blog is required", HttpStatus.BAD_REQUEST),
+    BLOG_AUTHOR_REQUIRED(6004, "author's blog is required", HttpStatus.BAD_REQUEST);
 
     private final int code;
     private final String message;
