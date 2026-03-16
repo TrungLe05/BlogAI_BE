@@ -1,22 +1,22 @@
 package com.example.blogai.Controller;
 
 import com.example.blogai.Service.AuthService;
-import com.example.blogai.dtos.request.IntrospectTokenRequest;
-import com.example.blogai.dtos.request.LoginRequest;
-import com.example.blogai.dtos.request.RefreshTokenRequest;
+import com.example.blogai.Service.UserService;
+import com.example.blogai.dtos.request.*;
 import com.example.blogai.dtos.response.ApiResponse;
 import com.example.blogai.dtos.response.AuthResponse;
 import com.example.blogai.dtos.response.IntrospectResponse;
 import com.example.blogai.dtos.response.UserResponse;
-import com.nimbusds.jwt.JWTClaimsSet;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     AuthService authService;
+
+    UserService userService;
 
     @PostMapping("/login")
     public ApiResponse<AuthResponse> login(@RequestBody @Valid LoginRequest request){
@@ -60,7 +62,21 @@ public class AuthController {
     public ApiResponse<UserResponse> getMe(@AuthenticationPrincipal Jwt jwt){
 
         return ApiResponse.<UserResponse>builder()
-                .result(authService.getMe(jwt.getClaim("email")))
+                .result(userService.getMe(jwt.getClaim("email")))
+                .build();
+    }
+    @PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<UserResponse> updateMe(@AuthenticationPrincipal Jwt jwt, @ModelAttribute @Valid UpdateProfileRequest request) throws IOException {
+
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.updateMe(jwt.getClaim("email"), request))
+                .build();
+    }
+
+    @PutMapping("/me/change-password")
+    public ApiResponse<UserResponse> updatePassword(@AuthenticationPrincipal Jwt jwt,@RequestBody @Valid ChangePasswordRequest request){
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.updatePassword(jwt.getClaim("email"),request))
                 .build();
     }
 }

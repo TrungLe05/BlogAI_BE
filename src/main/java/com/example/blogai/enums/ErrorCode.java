@@ -36,6 +36,8 @@ public enum ErrorCode {
     PASSWORD_TOO_SHORT(2021, "Password must be at least 8 characters", HttpStatus.BAD_REQUEST),
     PASSWORD_INCORRECT(2022, "Incorrect password", HttpStatus.UNAUTHORIZED),
     PASSWORD_TOO_WEAK(2023, "Password is too weak", HttpStatus.BAD_REQUEST),
+    CURRENT_PASSWORD_INCORRECT(2024, "current password incorrect", HttpStatus.UNAUTHORIZED),
+    PASSWORD_CONFIRMATION_MISMATCH(2025, "Password confirmation does not match", HttpStatus.BAD_REQUEST),
 
     // ===== AUTH =====
     TOKEN_INVALID(3001, "Token is invalid", HttpStatus.UNAUTHORIZED),
