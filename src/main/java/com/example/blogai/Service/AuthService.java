@@ -108,9 +108,5 @@ public class AuthService {
     }
 
 
-    public UserResponse getMe(String email){
-        var user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        return userMapper.toResponse(user);
-    }
 }

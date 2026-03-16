@@ -53,3 +53,9 @@ jwt:
   secret: 469b524edd8ad0566f436a094ac736a8
   expiration: 3600
   refresh-expiration: 604800
+aws:
+  s3:
+    bucket: ${AWS_S3_BUCKET}
+    region: ${AWS_S3_REGION}
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
