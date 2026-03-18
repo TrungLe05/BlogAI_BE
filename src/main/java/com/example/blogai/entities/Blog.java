@@ -54,7 +54,7 @@ public class Blog {
     @NotNull
     @ColumnDefault("0")
     @Column(name = "view_count", nullable = false)
-    private Integer viewCount;
+    private Integer viewCount = 0;
 
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)

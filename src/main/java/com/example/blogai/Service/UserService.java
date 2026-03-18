@@ -8,6 +8,7 @@ import com.example.blogai.dtos.request.UpdateProfileRequest;
 import com.example.blogai.dtos.response.UserResponse;
 import com.example.blogai.entities.User;
 import com.example.blogai.enums.ErrorCode;
+import com.example.blogai.enums.UploadType;
 import com.example.blogai.mapper.UserMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -52,21 +53,25 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
-    public UserResponse updateMe(String email, UpdateProfileRequest request) throws IOException, IOException {
+    public UserResponse updateMe(String email, UpdateProfileRequest request) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         userMapper.updateProfileUser(user, request);
 
         // Upload avatar nếu có
-        if (request.getAvatarUrl() != null && !request.getAvatarUrl().isEmpty()) {
-            // Xóa avatar cũ
-            if (user.getAvatarUrl() != null) {
-                s3Service.deleteAvatar(user.getAvatarUrl());
+        try {
+            if (request.getAvatarUrl() != null && !request.getAvatarUrl().isEmpty()) {
+                // Xóa avatar cũ
+                if (user.getAvatarUrl() != null) {
+                    s3Service.delete(user.getAvatarUrl());
+                }
+                String avatarUrl = s3Service.upload(
+                        request.getAvatarUrl(), user.getId().toString(), UploadType.AVATAR);
+                user.setAvatarUrl(avatarUrl);
             }
-            String avatarUrl = s3Service.uploadAvatar(
-                    request.getAvatarUrl(), user.getId().toString());
-            user.setAvatarUrl(avatarUrl);
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
 
         return userMapper.toResponse(userRepository.save(user));

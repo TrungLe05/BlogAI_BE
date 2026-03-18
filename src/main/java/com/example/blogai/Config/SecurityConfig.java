@@ -36,7 +36,8 @@ public class SecurityConfig {
     private String secretKey;
 
     private String[] PUBLIC_ENDPOINTS = {
-            "/auth/**", "/users/register", "/v3/api-docs", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/blogs/**"
+            "/auth/**", "/users/register", "/v3/api-docs", "/swagger-ui/**",
+            "/swagger-ui.html", "/v3/api-docs/**", "/blogs/**", "/tags/**"
     };
 
     CustomOAuth2UserService customOAuth2UserService;

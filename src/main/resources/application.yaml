@@ -59,3 +59,8 @@ aws:
     region: ${AWS_S3_REGION}
     access-key: ${AWS_ACCESS_KEY}
     secret-key: ${AWS_SECRET_KEY}
+
+logging:
+  level:
+    org.hibernate: DEBUG
+    org.springframework.transaction: DEBUG

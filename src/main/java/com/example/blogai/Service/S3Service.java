@@ -1,5 +1,6 @@
 package com.example.blogai.Service;
 
+import com.example.blogai.enums.UploadType;
 import jakarta.annotation.PostConstruct;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class S3Service {
+
     S3Client s3Client;
 
     @Value("${aws.s3.bucket}")
@@ -33,19 +35,24 @@ public class S3Service {
     @NonFinal
     String region;
 
+
+    // ===== TEST CONNECTION =====
+
     @PostConstruct
     public void testConnection() {
         try {
             s3Client.headBucket(HeadBucketRequest.builder().bucket(bucket).build());
-            log.info(" S3 connected: {}", bucket);
+            log.info("✅ S3 connected: {}", bucket);
         } catch (Exception e) {
-            log.error(" S3 connection failed: {}", e.getMessage());
+            log.error("❌ S3 connection failed: {}", e.getMessage());
         }
     }
 
-    public String uploadAvatar(MultipartFile file, String userId) throws IOException {
+    // ===== UPLOAD =====
+
+    public String upload(MultipartFile file, String ownerId, UploadType type) throws IOException {
         String extension = getExtension(file.getOriginalFilename());
-        String key = "avatars/" + userId + "/" + UUID.randomUUID() + extension;
+        String key = type.getFolder() + "/" + ownerId + "/" + UUID.randomUUID() + extension;
 
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -57,18 +64,31 @@ public class S3Service {
         s3Client.putObject(request,
                 RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
+        log.info("Uploaded {} to S3: {}", type.name(), key);
         return buildUrl(key);
     }
 
-    public void deleteAvatar(String avatarUrl) {
-        if (avatarUrl == null || !avatarUrl.contains(bucket)) return;
+    // ===== DELETE =====
 
-        String key = avatarUrl.substring(avatarUrl.indexOf("avatars/"));
+    public void delete(String fileUrl) {
+        if (fileUrl == null || fileUrl.isBlank()) return;
+        if (!fileUrl.contains(bucket)) {
+            log.warn("⚠️ URL does not belong to bucket {}: {}", bucket, fileUrl);
+            return;
+        }
+
+        // Extract key từ URL
+        String key = fileUrl.substring(fileUrl.indexOf(".amazonaws.com/") + 15);
+
         s3Client.deleteObject(DeleteObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
                 .build());
+
+        log.info("🗑️ Deleted from S3: {}", key);
     }
+
+    // ===== PRIVATE HELPERS =====
 
     private String buildUrl(String key) {
         return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + key;
@@ -78,6 +98,4 @@ public class S3Service {
         if (filename == null || !filename.contains(".")) return ".jpg";
         return filename.substring(filename.lastIndexOf("."));
     }
-
-
 }

@@ -3,6 +3,7 @@ package com.example.blogai.dtos.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
 import java.util.Set;
 
 @Builder
@@ -20,4 +21,5 @@ public class BlogResponse {
     UserResponse author;
     String blogStatus;
     Integer viewCount;
+    List<String> tags;
 }

@@ -16,7 +16,7 @@ public enum ErrorCode {
     NOT_FOUND(1004, "Resource not found", HttpStatus.NOT_FOUND),
     METHOD_NOT_ALLOWED(1005, "Method not allowed", HttpStatus.METHOD_NOT_ALLOWED),
     TOO_MANY_REQUESTS(1006, "Too many requests, please try again later", HttpStatus.TOO_MANY_REQUESTS),
-
+    NOT_BLANK(1007, "This field isn't blank", HttpStatus.BAD_REQUEST),
     // ===== VALIDATION =====
     VALIDATION_ERROR(1010, "Validation failed", HttpStatus.BAD_REQUEST),
 
@@ -59,8 +59,14 @@ public enum ErrorCode {
     BLOG_NOT_EXISTED(6001, "blog not existed", HttpStatus.NOT_FOUND),
     BLOG_CONTENT_REQUIRED(6002, "content's blog is required", HttpStatus.BAD_REQUEST),
     BLOG_COVER_IMAGE_REQUIRED(6003, "cover image blog is required", HttpStatus.BAD_REQUEST),
-    BLOG_AUTHOR_REQUIRED(6004, "author's blog is required", HttpStatus.BAD_REQUEST);
+    BLOG_AUTHOR_REQUIRED(6004, "author's blog is required", HttpStatus.BAD_REQUEST),
+    BLOG_TAG_REQUIRED(6005, "tag's blog are required", HttpStatus.BAD_REQUEST),
 
+    //====== TAG ======
+    TAG_REQUIRED(7001, "Tag name is required", HttpStatus.BAD_REQUEST),
+    TAG_GROUP_NAME_REQUIRED(7002, "Group name is required", HttpStatus.BAD_REQUEST),
+    TAG_EXISTED(7003, "this tag is existed", HttpStatus.BAD_REQUEST),
+    INVALID_TAG(7004, "tag invalid", HttpStatus.BAD_REQUEST);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

@@ -4,9 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -15,6 +13,9 @@ import java.util.UUID;
 @Setter
 @EqualsAndHashCode
 @Embeddable
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class BlogTagId implements Serializable {
     private static final long serialVersionUID = 74784971521108657L;
     @NotNull
