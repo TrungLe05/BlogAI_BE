@@ -44,6 +44,7 @@ public class SecurityConfig {
     OAuth2AuthenticationSuccessHandler successHandler;
     OAuth2AuthenticationFailureHandler failureHandler;
 
+    CorsConfig corsConfig;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
@@ -51,6 +52,7 @@ public class SecurityConfig {
                         request.requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                                 .anyRequest().authenticated()
                 )
+                .cors(cors -> cors.configurationSource(corsConfig.corsConfigurationSource()))
                 .oauth2ResourceServer(
                         oauth2 -> oauth2.jwt(
                                 jwt -> jwt.decoder(jwtDecoder())

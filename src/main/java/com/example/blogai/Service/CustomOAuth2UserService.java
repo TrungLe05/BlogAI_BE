@@ -66,10 +66,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                         updateExistingUser(existingUser, userInfo)
                 ).orElseGet(() -> registerNewUser(userInfo, registrationId));
 
+        String nameAttributeKey = userRequest
+                .getClientRegistration()
+                .getProviderDetails()
+                .getUserInfoEndpoint()
+                .getUserNameAttributeName();
+
+
         return new DefaultOAuth2User(
                 oAuth2User.getAuthorities(),
                 attributes,
-                "id"  // attribute dùng làm name
+                nameAttributeKey  // attribute dùng làm name
         );
     }
 
