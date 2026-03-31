@@ -16,6 +16,7 @@ public interface BlogMapper {
     @Mapping(target = "blogStatus", ignore = true)
     @Mapping(target = "blogId", source = "id")
     @Mapping(target = "tags", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     BlogResponse toResponse(Blog blog);
 
     @Mapping(target = "coverImageUrl", ignore = true)

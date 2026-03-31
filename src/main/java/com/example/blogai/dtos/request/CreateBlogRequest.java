@@ -22,7 +22,7 @@ public class CreateBlogRequest {
     String summary;
 
     @NotNull(message = "BLOG_COVER_IMAGE_REQUIRED")
-    @ValidImage(maxSizeMB = 2, allowedTypes = {"image/jpeg", "image/png", "image/webp"})
+    @ValidImage(maxSizeMB = 5, allowedTypes = {"image/jpeg", "image/png", "image/webp"})
     MultipartFile coverImageUrl;
 
     @NotNull(message = "BLOG_TAG_REQUIRED")

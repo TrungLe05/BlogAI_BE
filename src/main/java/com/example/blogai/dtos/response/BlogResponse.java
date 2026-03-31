@@ -1,5 +1,6 @@
 package com.example.blogai.dtos.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -12,6 +13,8 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+
 public class BlogResponse {
     String blogId;
     String title;
@@ -22,4 +25,6 @@ public class BlogResponse {
     String blogStatus;
     Integer viewCount;
     List<String> tags;
+    String createdAt;
+
 }

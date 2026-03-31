@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -95,7 +97,10 @@ public class BlogService {
     }
 
     private BlogResponse buildResponse(Blog blog) {
+        DateTimeFormatter dt = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                .withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
         BlogResponse response = blogMapper.toResponse(blog);
+        response.setCreatedAt(dt.format(blog.getCreatedAt()));
         response.setAuthor(userMapper.toResponse(blog.getAuthor()));
         response.setBlogStatus(blog.getStatus().name());
         return response;
@@ -137,6 +142,31 @@ public class BlogService {
                     return response;
                 })
                 .toList();
+    }
+
+
+    public List<BlogResponse> getAllBlogDraft(String authorId){
+        return blogsRepository.findAll().stream().map(bl -> {
+            if(bl.getStatus() == BlogStatus.DRAFT && bl.getAuthor().getId().toString().equalsIgnoreCase(authorId)){
+                BlogResponse response = buildResponse(bl);
+                response.setTags(getTagsByBlogId(bl.getId()));
+                return response;
+            }
+            return null;
+        }).toList();
+
+    }
+
+    public List<BlogResponse> getAllBlogPublish(String authorId){
+        return blogsRepository.findAll().stream().map(bl -> {
+            if(bl.getStatus() == BlogStatus.PUBLISHED && bl.getAuthor().getId().toString().equalsIgnoreCase(authorId)){
+                BlogResponse response = buildResponse(bl);
+                response.setTags(getTagsByBlogId(bl.getId()));
+                return response;
+            }
+            return null;
+        }).toList();
+
     }
 
     public BlogResponse getBlogByBlogId(UUID blogId) {

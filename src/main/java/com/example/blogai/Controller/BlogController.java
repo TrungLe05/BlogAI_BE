@@ -42,6 +42,22 @@ public class BlogController {
                 .build();
     }
 
+    @GetMapping("/draft")
+    public ApiResponse<List<BlogResponse>> getAllBlogDraftByAuthor(@AuthenticationPrincipal Jwt jwt){
+        return ApiResponse.<List<BlogResponse>>builder()
+                .result(blogService.getAllBlogDraft(jwt.getSubject()))
+                .build();
+    }
+
+    @GetMapping("/publish")
+    public ApiResponse<List<BlogResponse>> getAllBlogPublishByAuthor(@AuthenticationPrincipal Jwt jwt){
+        return ApiResponse.<List<BlogResponse>>builder()
+                .result(blogService.getAllBlogPublish(jwt.getSubject()))
+                .build();
+    }
+
+
+
     @GetMapping("/{blogId}")
     public ApiResponse<BlogResponse> getBlogById(@PathVariable UUID blogId){
         return ApiResponse.<BlogResponse>builder()
