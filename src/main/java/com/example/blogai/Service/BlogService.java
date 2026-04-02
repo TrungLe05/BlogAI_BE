@@ -5,6 +5,7 @@ import com.example.blogai.Repository.BlogTagRepository;
 import com.example.blogai.Repository.BlogsRepository;
 import com.example.blogai.Repository.TagRepository;
 import com.example.blogai.Repository.UserRepository;
+import com.example.blogai.Utils.HtmlImageProcessor;
 import com.example.blogai.dtos.request.CreateBlogRequest;
 import com.example.blogai.dtos.request.UpdateBlogRequest;
 import com.example.blogai.dtos.response.BlogResponse;
@@ -43,6 +44,8 @@ public class BlogService {
     TagRepository tagRepository;
     BlogTagRepository blogTagRepository;
     TagMapper tagMapper;
+    HtmlImageProcessor htmlImageProcessor;
+
 
     // ==================== PRIVATE HELPERS ====================
 
@@ -85,10 +88,10 @@ public class BlogService {
         blogTagRepository.saveAll(blogTags);
     }
 
-    private String uploadCoverImage(MultipartFile file, String refId) {
+    private String uploadCoverImage(MultipartFile file, String blogId) {
         try {
             if (file != null && !file.isEmpty()) {
-                return s3Service.upload(file, refId, UploadType.BLOG_COVER);
+                return s3Service.uploadCoverImage(file, blogId); // gọi method mới trong S3Service
             }
         } catch (IOException e) {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -116,16 +119,40 @@ public class BlogService {
     // ==================== PUBLIC METHODS ====================
 
     @Transactional
-    public BlogResponse createBlog(CreateBlogRequest request, String userId) {
+    public BlogResponse saveDraft(CreateBlogRequest request, String userId) {
+        return saveBlogFactory(request, userId, BlogStatus.DRAFT);
+    }
+
+    @Transactional
+    public BlogResponse savePublish(CreateBlogRequest request, String userId) {
+        return saveBlogFactory(request, userId, BlogStatus.PUBLISHED);
+    }
+
+
+    private BlogResponse saveBlogFactory(CreateBlogRequest request, String userId, BlogStatus blogStatus){
         User author = findUser(userId);
         Map<String, Tag> validTagMap = validateAndGetTags(request.getTags());
 
+        // 1. Tạo blog rỗng trước → lấy blogId
         Blog blog = blogMapper.toBlog(request);
         blog.setAuthor(author);
+        blog.setStatus(blogStatus);
+        blog.setContent("");        // tạm rỗng
+        blog.setCoverImageUrl(null);
+        blogsRepository.save(blog); // flush để có ID
 
-        String imageUrl = uploadCoverImage(request.getCoverImageUrl(), userId);
-        if (imageUrl != null) blog.setCoverImageUrl(imageUrl);
+        String blogId = blog.getId().toString();
 
+        // 2. Process & upload ảnh trong content theo blogId
+        String processedContent = htmlImageProcessor
+                .processAndUploadImages(request.getContent(), userId, blogId);
+        blog.setContent(processedContent);
+
+        // 3. Upload cover image theo blogId
+        String coverUrl = uploadCoverImage(request.getCoverImageUrl(), blogId);
+        if (coverUrl != null) blog.setCoverImageUrl(coverUrl);
+
+        // 4. Update blog với đầy đủ data
         blogsRepository.save(blog);
         saveBlogTags(blog, validTagMap);
 
@@ -145,28 +172,28 @@ public class BlogService {
     }
 
 
-    public List<BlogResponse> getAllBlogDraft(String authorId){
-        return blogsRepository.findAll().stream().map(bl -> {
-            if(bl.getStatus() == BlogStatus.DRAFT && bl.getAuthor().getId().toString().equalsIgnoreCase(authorId)){
-                BlogResponse response = buildResponse(bl);
-                response.setTags(getTagsByBlogId(bl.getId()));
-                return response;
-            }
-            return null;
-        }).toList();
-
+    public List<BlogResponse> getAllBlogDraft(String authorId) {
+        return blogsRepository
+                .findByAuthorIdAndStatus(UUID.fromString(authorId), BlogStatus.DRAFT)
+                .stream()
+                .map(blog -> {
+                    BlogResponse response = buildResponse(blog);
+                    response.setTags(getTagsByBlogId(blog.getId()));
+                    return response;
+                })
+                .toList();
     }
 
-    public List<BlogResponse> getAllBlogPublish(String authorId){
-        return blogsRepository.findAll().stream().map(bl -> {
-            if(bl.getStatus() == BlogStatus.PUBLISHED && bl.getAuthor().getId().toString().equalsIgnoreCase(authorId)){
-                BlogResponse response = buildResponse(bl);
-                response.setTags(getTagsByBlogId(bl.getId()));
-                return response;
-            }
-            return null;
-        }).toList();
-
+    public List<BlogResponse> getAllBlogPublish(String authorId) {
+        return blogsRepository
+                .findByAuthorIdAndStatus(UUID.fromString(authorId), BlogStatus.PUBLISHED)
+                .stream()
+                .map(blog -> {
+                    BlogResponse response = buildResponse(blog);
+                    response.setTags(getTagsByBlogId(blog.getId()));
+                    return response;
+                })
+                .toList();
     }
 
     public BlogResponse getBlogByBlogId(UUID blogId) {
@@ -194,6 +221,11 @@ public class BlogService {
 
         blogMapper.updateBlog(blog, request);
 
+        String processedContent = htmlImageProcessor
+                .processAndUploadImages(request.getContent(), blog.getAuthor().getId().toString(), blogId.toString());
+        blog.setContent(processedContent);
+
+        // ✅ Update cover image
         String imageUrl = uploadCoverImage(request.getCoverImageUrl(), blogId.toString());
         if (imageUrl != null) {
             if (blog.getCoverImageUrl() != null) s3Service.delete(blog.getCoverImageUrl());
@@ -209,13 +241,17 @@ public class BlogService {
     }
 
     public void deleteBlog(UUID blogId) {
-        blogsRepository.delete(findBlog(blogId));
-    }
+        // Xóa DB
+        blogsRepository.deleteById(blogId);
 
-    public void publishBlog(UUID blogId) {
+        // Xóa toàn bộ ảnh trên S3 chỉ 1 dòng
+        s3Service.deleteBlogFolder(blogId.toString());
+    }
+    public BlogResponse publishBlog(UUID blogId) {
         Blog blog = findBlog(blogId);
-        if (BlogStatus.PUBLISHED.equals(blog.getStatus())) return;
+        if (BlogStatus.PUBLISHED.equals(blog.getStatus())) return null;
         blog.setStatus(BlogStatus.PUBLISHED);
         blogsRepository.save(blog);
+        return buildResponse(blog);
     }
 }

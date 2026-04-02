@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-
 @RestController
 @RequestMapping("/blogs")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -26,75 +25,95 @@ public class BlogController {
 
     BlogService blogService;
 
+    // ── CREATE ──────────────────────────────────────────────────
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<BlogResponse> createBlog(
+    public ApiResponse<BlogResponse> saveDraft(
             @AuthenticationPrincipal Jwt jwt,
-            @ModelAttribute @Valid CreateBlogRequest request){
+            @ModelAttribute @Valid CreateBlogRequest request) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.createBlog(request, jwt.getSubject()))
+                .result(blogService.saveDraft(request, jwt.getSubject()))
                 .build();
     }
-
+    @PostMapping(path = "/publish",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<BlogResponse> savePublish(
+            @AuthenticationPrincipal Jwt jwt,
+            @ModelAttribute @Valid CreateBlogRequest request) {
+        return ApiResponse.<BlogResponse>builder()
+                .result(blogService.savePublish(request, jwt.getSubject()))
+                .build();
+    }
+    // ── READ ────────────────────────────────────────────────────
     @GetMapping
-    public ApiResponse<List<BlogResponse>> getAllBlogs(){
+    public ApiResponse<List<BlogResponse>> getAllBlogs() {
         return ApiResponse.<List<BlogResponse>>builder()
                 .result(blogService.getAllBlogs())
                 .build();
     }
 
     @GetMapping("/draft")
-    public ApiResponse<List<BlogResponse>> getAllBlogDraftByAuthor(@AuthenticationPrincipal Jwt jwt){
+    public ApiResponse<List<BlogResponse>> getAllBlogDraftByAuthor(
+            @AuthenticationPrincipal Jwt jwt) {
         return ApiResponse.<List<BlogResponse>>builder()
                 .result(blogService.getAllBlogDraft(jwt.getSubject()))
                 .build();
     }
 
     @GetMapping("/publish")
-    public ApiResponse<List<BlogResponse>> getAllBlogPublishByAuthor(@AuthenticationPrincipal Jwt jwt){
+    public ApiResponse<List<BlogResponse>> getAllBlogPublishByAuthor(
+            @AuthenticationPrincipal Jwt jwt) {
         return ApiResponse.<List<BlogResponse>>builder()
                 .result(blogService.getAllBlogPublish(jwt.getSubject()))
                 .build();
     }
 
-
-
-    @GetMapping("/{blogId}")
-    public ApiResponse<BlogResponse> getBlogById(@PathVariable UUID blogId){
-        return ApiResponse.<BlogResponse>builder()
-                .result(blogService.getBlogByBlogId(blogId))
-                .build();
-    }
-
     @GetMapping("/author")
-    public ApiResponse<List<BlogResponse>> getAllBlogByAuthor(@AuthenticationPrincipal Jwt jwt){
+    public ApiResponse<List<BlogResponse>> getAllBlogByAuthor(
+            @AuthenticationPrincipal Jwt jwt) {
         return ApiResponse.<List<BlogResponse>>builder()
                 .result(blogService.getAllBlogsByAuthor(jwt.getSubject()))
                 .build();
     }
 
-    @PutMapping(value = "/{blogId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<BlogResponse> updateBlog(@PathVariable UUID blogId,
-                                                @ModelAttribute @Valid UpdateBlogRequest request){
+    @GetMapping("/{blogId}")
+    public ApiResponse<BlogResponse> getBlogById(@PathVariable UUID blogId) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.updateBlog(blogId,request))
+                .result(blogService.getBlogByBlogId(blogId))
                 .build();
     }
 
+    // ── UPDATE ──────────────────────────────────────────────────
+    @PutMapping(value = "/{blogId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<BlogResponse> updateBlog(
+            @PathVariable UUID blogId,
+            @ModelAttribute @Valid UpdateBlogRequest request) {
+        return ApiResponse.<BlogResponse>builder()
+                .result(blogService.updateBlog(blogId, request))
+                .build();
+    }
+
+    // PATCH /{blogId}/publish — đổi status DRAFT → PUBLISHED
+    @PatchMapping("/{blogId}/publish")
+    public ApiResponse<BlogResponse> publishBlog(@PathVariable UUID blogId) {
+        return ApiResponse.<BlogResponse>builder()
+                .result(blogService.publishBlog(blogId))
+                .build();
+    }
+
+    // PATCH /{blogId}/unpublish — đổi status PUBLISHED → DRAFT
+//    @PatchMapping("/{blogId}/unpublish")
+//    public ApiResponse<BlogResponse> unpublishBlog(@PathVariable UUID blogId) {
+//        return ApiResponse.<BlogResponse>builder()
+//                .result(blogService.unpublishBlog(blogId))
+//                .build();
+//    }
+
+    // ── DELETE ──────────────────────────────────────────────────
     @DeleteMapping("/{blogId}")
-    public ApiResponse<Void> deleteBlog(@PathVariable UUID blogId){
+    public ApiResponse<Void> deleteBlog(@PathVariable UUID blogId) {
         blogService.deleteBlog(blogId);
         return ApiResponse.<Void>builder()
                 .result(null)
                 .message("Delete blog successfully")
-                .build();
-    }
-
-    @PatchMapping("/{blogId}")
-    public ApiResponse<Void> publishBlog(@PathVariable UUID blogId){
-        blogService.publishBlog(blogId);
-        return ApiResponse.<Void>builder()
-                .result(null)
-                .message("blog is published successfully")
                 .build();
     }
 }

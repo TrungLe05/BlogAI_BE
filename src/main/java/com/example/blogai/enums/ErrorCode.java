@@ -66,7 +66,9 @@ public enum ErrorCode {
     TAG_REQUIRED(7001, "Tag name is required", HttpStatus.BAD_REQUEST),
     TAG_GROUP_NAME_REQUIRED(7002, "Group name is required", HttpStatus.BAD_REQUEST),
     TAG_EXISTED(7003, "this tag is existed", HttpStatus.BAD_REQUEST),
-    INVALID_TAG(7004, "tag invalid", HttpStatus.BAD_REQUEST);
+    INVALID_TAG(7004, "tag invalid", HttpStatus.BAD_REQUEST),
+
+    FILE_TOO_LARGE(8001, "File size exceeds the maximum allowed limit", HttpStatus.CONTENT_TOO_LARGE);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

@@ -59,12 +59,12 @@ public class Blog {
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
-    private Instant createdAt;
+    private Instant createdAt = Instant.now();
 
     @ColumnDefault("now()")
     @Column(name = "updated_at", nullable = false)
     @UpdateTimestamp
-    private Instant updatedAt;
+    private Instant updatedAt = Instant.now();
 
 
 }

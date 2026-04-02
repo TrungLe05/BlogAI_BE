@@ -98,4 +98,78 @@ public class S3Service {
         if (filename == null || !filename.contains(".")) return ".jpg";
         return filename.substring(filename.lastIndexOf("."));
     }
+
+    public String uploadBytes(byte[] bytes, String fileName, String contentType) {
+        s3Client.putObject(
+                PutObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(fileName)
+                        .contentType(contentType)
+                        .contentLength((long) bytes.length)
+                        .build(),
+                RequestBody.fromBytes(bytes)
+        );
+
+        return String.format("https://%s.s3.%s.amazonaws.com/%s",
+                bucket, region, fileName);
+    }
+
+    // S3Service.java - thêm method mới
+
+    public String uploadBytes(byte[] bytes, String contentType, String userId, String blogId, String fileName) {
+        // path: blogs/{blogId}/images/{uuid}.ext
+        String key = "blogs/" + blogId + "/images/" + UUID.randomUUID() + getExtension(fileName);
+
+        s3Client.putObject(
+                PutObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(key)
+                        .contentType(contentType)
+                        .contentLength((long) bytes.length)
+                        .build(),
+                RequestBody.fromBytes(bytes)
+        );
+
+        log.info("📸 Uploaded blog image: {}", key);
+        return buildUrl(key);
+    }
+
+    public String uploadCoverImage(MultipartFile file, String blogId) throws IOException {
+        String extension = getExtension(file.getOriginalFilename());
+        String key = "blogs/" + blogId + "/cover/" + UUID.randomUUID() + extension;
+
+        s3Client.putObject(
+                PutObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(key)
+                        .contentType(file.getContentType())
+                        .contentLength(file.getSize())
+                        .build(),
+                RequestBody.fromInputStream(file.getInputStream(), file.getSize())
+        );
+
+        log.info("🖼️ Uploaded cover: {}", key);
+        return buildUrl(key);
+    }
+
+    // Xóa toàn bộ folder của blog (dùng khi delete blog)
+    public void deleteBlogFolder(String blogId) {
+        String prefix = "blogs/" + blogId + "/";
+
+        // List tất cả objects theo prefix rồi xóa
+        var listResponse = s3Client.listObjectsV2(builder -> builder
+                .bucket(bucket)
+                .prefix(prefix)
+                .build());
+
+        listResponse.contents().forEach(obj -> {
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(obj.key())
+                    .build());
+            log.info("🗑️ Deleted: {}", obj.key());
+        });
+
+        log.info("✅ Deleted blog folder: {}", prefix);
+    }
 }

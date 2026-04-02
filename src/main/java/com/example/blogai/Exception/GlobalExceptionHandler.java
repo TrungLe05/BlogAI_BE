@@ -3,10 +3,13 @@ package com.example.blogai.Exception;
 import com.example.blogai.dtos.response.ApiResponse;
 import com.example.blogai.enums.ErrorCode;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.Objects;
 
@@ -55,5 +58,13 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(response);
 
+    }
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    @ResponseStatus(HttpStatus.CONTENT_TOO_LARGE)
+    public ApiResponse<Void> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException e) {
+        return ApiResponse.<Void>builder()
+                .code(ErrorCode.FILE_TOO_LARGE.getCode())
+                .message("File size exceeds the maximum allowed limit")
+                .build();
     }
 }

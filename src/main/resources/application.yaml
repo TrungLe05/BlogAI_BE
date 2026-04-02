@@ -2,7 +2,14 @@ server:
   port: 8081
   servlet:
     context-path: /api/v1
+  tomcat:
+    max-http-form-post-size: 100MB
+    max-swallow-size: 100MB
 spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
   security:
     oauth2:
       client:
@@ -63,8 +70,3 @@ aws:
     region: ${AWS_S3_REGION}
     access-key: ${AWS_ACCESS_KEY}
     secret-key: ${AWS_SECRET_KEY}
-
-logging:
-  level:
-    org.hibernate: DEBUG
-    org.springframework.transaction: DEBUG

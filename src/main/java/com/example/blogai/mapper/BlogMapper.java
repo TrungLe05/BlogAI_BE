@@ -19,6 +19,8 @@ public interface BlogMapper {
     @Mapping(target = "createdAt", ignore = true)
     BlogResponse toResponse(Blog blog);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "coverImageUrl", ignore = true)
+    @Mapping(target = "content", ignore = true)
     void updateBlog(@MappingTarget Blog blog, UpdateBlogRequest request);
 }
