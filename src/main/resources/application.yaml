@@ -70,3 +70,7 @@ aws:
     region: ${AWS_S3_REGION}
     access-key: ${AWS_ACCESS_KEY}
     secret-key: ${AWS_SECRET_KEY}
+
+openrouter:
+  api:
+    key: ${OPENROUTER_API_KEY}

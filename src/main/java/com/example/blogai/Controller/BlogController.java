@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 @RestController
 @RequestMapping("/blogs")
@@ -74,10 +75,22 @@ public class BlogController {
                 .build();
     }
 
+    @GetMapping("/related")
+    public ApiResponse<List<BlogResponse>> getBlogRelatedByTags(
+            @RequestParam Set<String> tags,
+            @RequestParam UUID currentBlogId) {
+        return ApiResponse.<List<BlogResponse>>builder()
+                .result(blogService.relatedBlog(tags, currentBlogId))
+                .build();
+    }
+
     @GetMapping("/{blogId}")
-    public ApiResponse<BlogResponse> getBlogById(@PathVariable UUID blogId) {
+    public ApiResponse<BlogResponse> getBlogById(
+            @PathVariable UUID blogId,
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt != null ? jwt.getSubject() : null;
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.getBlogByBlogId(blogId))
+                .result(blogService.getBlogByBlogId(blogId, userId))
                 .build();
     }
 
@@ -99,13 +112,6 @@ public class BlogController {
                 .build();
     }
 
-    // PATCH /{blogId}/unpublish — đổi status PUBLISHED → DRAFT
-//    @PatchMapping("/{blogId}/unpublish")
-//    public ApiResponse<BlogResponse> unpublishBlog(@PathVariable UUID blogId) {
-//        return ApiResponse.<BlogResponse>builder()
-//                .result(blogService.unpublishBlog(blogId))
-//                .build();
-//    }
 
     // ── DELETE ──────────────────────────────────────────────────
     @DeleteMapping("/{blogId}")
@@ -114,6 +120,27 @@ public class BlogController {
         return ApiResponse.<Void>builder()
                 .result(null)
                 .message("Delete blog successfully")
+                .build();
+    }
+
+    // ── LIKE & VIEW ─────────────────────────────────────────────
+    @PostMapping("/{blogId}/like")
+    public ApiResponse<BlogResponse> toggleLike(
+            @PathVariable UUID blogId,
+            @AuthenticationPrincipal Jwt jwt) {
+        return ApiResponse.<BlogResponse>builder()
+                .result(blogService.toggleLike(blogId, jwt.getSubject()))
+                .build();
+    }
+
+    // ✅ Trả về int — chỉ viewCount mới, không cần full BlogResponse
+    @PostMapping("/{blogId}/view")
+    public ApiResponse<Integer> incrementView(
+            @PathVariable UUID blogId,
+            @AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt != null ? jwt.getSubject() : null;
+        return ApiResponse.<Integer>builder()
+                .result(blogService.incrementView(blogId, userId))
                 .build();
     }
 }

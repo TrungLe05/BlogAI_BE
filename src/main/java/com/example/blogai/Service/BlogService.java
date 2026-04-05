@@ -1,10 +1,7 @@
 package com.example.blogai.Service;
 
 import com.example.blogai.Exception.AppException;
-import com.example.blogai.Repository.BlogTagRepository;
-import com.example.blogai.Repository.BlogsRepository;
-import com.example.blogai.Repository.TagRepository;
-import com.example.blogai.Repository.UserRepository;
+import com.example.blogai.Repository.*;
 import com.example.blogai.Utils.HtmlImageProcessor;
 import com.example.blogai.dtos.request.CreateBlogRequest;
 import com.example.blogai.dtos.request.UpdateBlogRequest;
@@ -45,6 +42,8 @@ public class BlogService {
     BlogTagRepository blogTagRepository;
     TagMapper tagMapper;
     HtmlImageProcessor htmlImageProcessor;
+    BlogLikeRepository blogLikeRepository; // ✅ thêm
+    BlogViewRepository blogViewRepository;
 
 
     // ==================== PRIVATE HELPERS ====================
@@ -115,6 +114,18 @@ public class BlogService {
                 .map(blogTag -> blogTag.getTag().getTag())
                 .toList();
     }
+
+    private void setLikeInfo(BlogResponse response, UUID blogId, String currentUserId) {
+        response.setLikeCount(blogLikeRepository.countByIdBlogId(blogId));
+        if (currentUserId != null) {
+            response.setLikedByCurrentUser(
+                    blogLikeRepository.existsByIdBlogIdAndIdUserId(
+                            blogId, UUID.fromString(currentUserId)
+                    )
+            );
+        }
+    }
+
 
     // ==================== PUBLIC METHODS ====================
 
@@ -196,10 +207,11 @@ public class BlogService {
                 .toList();
     }
 
-    public BlogResponse getBlogByBlogId(UUID blogId) {
+    public BlogResponse getBlogByBlogId(UUID blogId, String currentUserId) {
         Blog blog = findBlog(blogId);
         BlogResponse response = buildResponse(blog);
         response.setTags(getTagsByBlogId(blogId));
+        setLikeInfo(response, blogId, currentUserId);
         return response;
     }
 
@@ -253,5 +265,54 @@ public class BlogService {
         blog.setStatus(BlogStatus.PUBLISHED);
         blogsRepository.save(blog);
         return buildResponse(blog);
+    }
+
+    public List<BlogResponse> relatedBlog(Set<String> tags, UUID currentBlogId) {
+        return blogsRepository.findBlogsByTagList(tags, currentBlogId)
+                .stream()
+                .map(blog -> {
+                    BlogResponse response = buildResponse(blog);
+                    response.setTags(getTagsByBlogId(blog.getId()));
+                    response.setLikeCount(blogLikeRepository.countByIdBlogId(blog.getId())); // ✅
+                    return response;
+                })
+                .toList();
+    }
+
+    @Transactional
+    public BlogResponse toggleLike(UUID blogId, String userId) {
+        UUID uid = UUID.fromString(userId);
+        int deleted = blogLikeRepository.deleteByIdBlogIdAndIdUserId(blogId, uid);
+        if (deleted == 0) {
+            blogLikeRepository.likeIfNotExists(blogId, uid);
+        }
+        Blog blog = findBlog(blogId);
+        BlogResponse response = buildResponse(blog);
+        response.setTags(getTagsByBlogId(blogId));
+        setLikeInfo(response, blogId, userId);
+        return response;
+    }
+
+    @Transactional
+    public int incrementView(UUID blogId, String currentUserId) {
+        Blog blog = findBlog(blogId);
+
+        // Guest không đăng nhập → không tăng
+        if (currentUserId == null) return blog.getViewCount();
+
+        UUID uid = UUID.fromString(currentUserId);
+
+        // Author xem blog của mình → không tăng
+        boolean isAuthor = blog.getAuthor().getId().equals(uid);
+        if (isAuthor) return blog.getViewCount();
+
+        // Insert view — ON CONFLICT DO NOTHING đảm bảo mỗi user chỉ tăng 1 lần
+        int inserted = blogViewRepository.recordViewIfNotExists(blogId, uid);
+        if (inserted > 0) {
+            blogsRepository.incrementViewCount(blogId);
+            return blog.getViewCount() + 1;
+        }
+
+        return blog.getViewCount();
     }
 }

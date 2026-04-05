@@ -26,5 +26,6 @@ public class BlogResponse {
     Integer viewCount;
     List<String> tags;
     String createdAt;
-
+    long likeCount;
+    boolean likedByCurrentUser;
 }
