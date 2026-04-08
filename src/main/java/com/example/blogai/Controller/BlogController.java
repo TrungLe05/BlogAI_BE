@@ -14,7 +14,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -81,6 +80,13 @@ public class BlogController {
             @RequestParam UUID currentBlogId) {
         return ApiResponse.<List<BlogResponse>>builder()
                 .result(blogService.relatedBlog(tags, currentBlogId))
+                .build();
+    }
+
+    @GetMapping("/4-viewest")
+    public ApiResponse<List<BlogResponse>> get4BlogViewest(){
+        return ApiResponse.<List<BlogResponse>>builder()
+                .result(blogService.get4BlogViewest())
                 .build();
     }
 

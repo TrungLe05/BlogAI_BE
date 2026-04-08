@@ -61,7 +61,7 @@ public enum ErrorCode {
     BLOG_COVER_IMAGE_REQUIRED(6003, "cover image blog is required", HttpStatus.BAD_REQUEST),
     BLOG_AUTHOR_REQUIRED(6004, "author's blog is required", HttpStatus.BAD_REQUEST),
     BLOG_TAG_REQUIRED(6005, "tag's blog are required", HttpStatus.BAD_REQUEST),
-
+    BLOG_TITLE_REQUIRED(6006, "blog title is required", HttpStatus.BAD_REQUEST),
     //====== TAG ======
     TAG_REQUIRED(7001, "Tag name is required", HttpStatus.BAD_REQUEST),
     TAG_GROUP_NAME_REQUIRED(7002, "Group name is required", HttpStatus.BAD_REQUEST),

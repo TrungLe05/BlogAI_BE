@@ -4,6 +4,7 @@ import com.example.blogai.Service.TagService;
 import com.example.blogai.dtos.request.AddTagRequest;
 import com.example.blogai.dtos.response.ApiResponse;
 import com.example.blogai.dtos.response.TagResponse;
+import com.example.blogai.dtos.response.TagStatsResponse;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,26 @@ public class TagController {
                 .build();
     }
 
+    @GetMapping("/top-views")
+    public ApiResponse<List<TagStatsResponse>> getTopTagsByViews(
+            @RequestParam(defaultValue = "10") int limit) {
+        return ApiResponse.<List<TagStatsResponse>>builder()
+                .result(tagService.getTopTagsByViews(limit))
+                .build();
+    }
 
-
+    @GetMapping("/top-likes")
+    public ApiResponse<List<TagStatsResponse>> getTopTagsByLikes(
+            @RequestParam(defaultValue = "10") int limit) {
+        return ApiResponse.<List<TagStatsResponse>>builder()
+                .result(tagService.getTopTagsByLikes(limit))
+                .build();
+    }
+    @GetMapping("/trending-groups")
+    public ApiResponse<List<TagStatsResponse>> getTrendingGroups(
+            @RequestParam(defaultValue = "3") int limit) {
+        return ApiResponse.<List<TagStatsResponse>>builder()
+                .result(tagService.getTopGroupsByPostCount(limit))
+                .build();
+    }
 }

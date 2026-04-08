@@ -3,12 +3,10 @@ package com.example.blogai.Config;
 import com.example.blogai.Oauth2.OAuth2AuthenticationFailureHandler;
 import com.example.blogai.Oauth2.OAuth2AuthenticationSuccessHandler;
 import com.example.blogai.Service.CustomOAuth2UserService;
-import com.nimbusds.jose.JWSAlgorithm;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +35,7 @@ public class SecurityConfig {
 
     private String[] PUBLIC_ENDPOINTS = {
             "/auth/**", "/users/register", "/v3/api-docs", "/swagger-ui/**",
-            "/swagger-ui.html", "/v3/api-docs/**", "/blogs/**", "/tags/**"
+            "/swagger-ui.html", "/v3/api-docs/**", "/blogs/4-viewest"
     };
 
     CustomOAuth2UserService customOAuth2UserService;

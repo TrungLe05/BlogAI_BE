@@ -25,4 +25,9 @@ public interface BlogsRepository extends JpaRepository<Blog, UUID> {
     @Modifying
     @Query("UPDATE Blog b SET b.viewCount = b.viewCount + 1 WHERE b.id = :blogId")
     void incrementViewCount(@Param("blogId") UUID blogId);
+
+    @Query("SELECT b FROM Blog b WHERE b.status = 'PUBLISHED' ORDER BY b.viewCount DESC")
+    List<Blog> getFourBlogMostViewer();
+
+
 }

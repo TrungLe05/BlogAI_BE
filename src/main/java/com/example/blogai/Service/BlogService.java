@@ -6,6 +6,7 @@ import com.example.blogai.Utils.HtmlImageProcessor;
 import com.example.blogai.dtos.request.CreateBlogRequest;
 import com.example.blogai.dtos.request.UpdateBlogRequest;
 import com.example.blogai.dtos.response.BlogResponse;
+import com.example.blogai.dtos.response.TagStatsResponse;
 import com.example.blogai.entities.*;
 import com.example.blogai.enums.BlogStatus;
 import com.example.blogai.enums.ErrorCode;
@@ -315,4 +316,11 @@ public class BlogService {
 
         return blog.getViewCount();
     }
+
+    public List<BlogResponse> get4BlogViewest(){
+        var blog = blogsRepository.getFourBlogMostViewer();
+        return blog.stream().map(this::buildResponse).toList();
+    }
+
+
 }

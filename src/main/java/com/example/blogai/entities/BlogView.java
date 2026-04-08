@@ -36,5 +36,5 @@ public class BlogView {
     @ColumnDefault("now()")
     @CreationTimestamp
     @Column(name = "viewed_at", nullable = false)
-    private Instant viewed_at;
+    private Instant viewedAt;
 }

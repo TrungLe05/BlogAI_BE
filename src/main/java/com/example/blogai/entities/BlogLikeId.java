@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @Getter
@@ -13,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BlogLikeId {
+public class BlogLikeId implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Column(name = "blog_id", nullable = false)

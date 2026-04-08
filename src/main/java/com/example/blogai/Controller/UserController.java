@@ -18,7 +18,7 @@ public class UserController {
     UserService userService;
 
     @PostMapping("/register")
-    public ApiResponse<UserResponse> createUser (@RequestBody @Valid RegisterRequest request) throws Exception {
+    public ApiResponse<UserResponse> createUser (@RequestBody @Valid RegisterRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.createUser(request))
                 .build();

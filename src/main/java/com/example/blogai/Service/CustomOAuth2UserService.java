@@ -93,7 +93,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private User updateExistingUser(User user, Oauth2UserInfo userInfo) {
         user.setFullName(userInfo.getName());
-        user.setAvatarUrl(userInfo.getAvatarUrl());
+        if (!user.isAvatarCustomized()) {
+            user.setAvatarUrl(userInfo.getAvatarUrl());
+        }
         return userRepository.save(user);
     }
 

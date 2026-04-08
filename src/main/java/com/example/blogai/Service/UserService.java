@@ -69,6 +69,7 @@ public class UserService {
                 String avatarUrl = s3Service.upload(
                         request.getAvatarUrl(), user.getId().toString(), UploadType.AVATAR);
                 user.setAvatarUrl(avatarUrl);
+                user.setAvatarCustomized(true);
             }
         } catch (IOException e) {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);

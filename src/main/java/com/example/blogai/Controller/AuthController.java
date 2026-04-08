@@ -11,12 +11,11 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 @RestController
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,6 +26,9 @@ public class AuthController {
     AuthService authService;
 
     UserService userService;
+
+    @NonFinal
+    String emailClaim = "email";
 
     @PostMapping("/login")
     public ApiResponse<AuthResponse> login(@RequestBody @Valid LoginRequest request){
@@ -62,21 +64,21 @@ public class AuthController {
     public ApiResponse<UserResponse> getMe(@AuthenticationPrincipal Jwt jwt){
 
         return ApiResponse.<UserResponse>builder()
-                .result(userService.getMe(jwt.getClaim("email")))
+                .result(userService.getMe(jwt.getClaim(emailClaim)))
                 .build();
     }
     @PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<UserResponse> updateMe(@AuthenticationPrincipal Jwt jwt, @ModelAttribute @Valid UpdateProfileRequest request) throws IOException {
+    public ApiResponse<UserResponse> updateMe(@AuthenticationPrincipal Jwt jwt, @ModelAttribute @Valid UpdateProfileRequest request){
 
         return ApiResponse.<UserResponse>builder()
-                .result(userService.updateMe(jwt.getClaim("email"), request))
+                .result(userService.updateMe(jwt.getClaim(emailClaim), request))
                 .build();
     }
 
     @PutMapping("/me/change-password")
     public ApiResponse<UserResponse> updatePassword(@AuthenticationPrincipal Jwt jwt,@RequestBody @Valid ChangePasswordRequest request){
         return ApiResponse.<UserResponse>builder()
-                .result(userService.updatePassword(jwt.getClaim("email"),request))
+                .result(userService.updatePassword(jwt.getClaim(emailClaim),request))
                 .build();
     }
 }

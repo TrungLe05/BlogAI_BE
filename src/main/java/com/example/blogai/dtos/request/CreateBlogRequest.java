@@ -14,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateBlogRequest {
-
+    @NotNull(message = "BLOG_TITLE_REQUIRED")
     String title;
     @NotNull(message = "BLOG_CONTENT_REQUIRED")
     String content;

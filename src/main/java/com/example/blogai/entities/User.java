@@ -73,5 +73,7 @@ public class User {
     @UpdateTimestamp
     private Instant updatedAt;
 
-
+    @ColumnDefault("false")
+    @Column(name = "avatar_customized", nullable = false)
+    private boolean avatarCustomized = false;
 }
