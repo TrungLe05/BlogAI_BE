@@ -11,7 +11,12 @@ import org.mapstruct.*;
 public interface UserMapper {
 
     User toUser(RegisterRequest request);
-    UserResponse toResponse (User user);
+    @Mapping(target = "isFollowing", expression = "java(isFollowing)")
+    UserResponse toResponse(User user, @Context boolean isFollowing);
+
+    // ✅ giữ lại overload không cần isFollowing (cho các chỗ không cần check follow)
+    @Mapping(target = "isFollowing", constant = "false")
+    UserResponse toResponse(User user);
 
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

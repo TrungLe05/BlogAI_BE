@@ -45,6 +45,7 @@ public class BlogService {
     HtmlImageProcessor htmlImageProcessor;
     BlogLikeRepository blogLikeRepository; // ✅ thêm
     BlogViewRepository blogViewRepository;
+    FollowRepository followRepository;
 
 
     // ==================== PRIVATE HELPERS ====================
@@ -99,16 +100,22 @@ public class BlogService {
         return null;
     }
 
-    private BlogResponse buildResponse(Blog blog) {
+    private BlogResponse buildResponse(Blog blog, UUID currentUserId) {
         DateTimeFormatter dt = DateTimeFormatter.ofPattern("dd/MM/yyyy")
                 .withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
         BlogResponse response = blogMapper.toResponse(blog);
         response.setCreatedAt(dt.format(blog.getCreatedAt()));
-        response.setAuthor(userMapper.toResponse(blog.getAuthor()));
+        boolean isFollowing = currentUserId != null &&
+                followRepository.existsByFollowerIdAndFollowingId(
+                        currentUserId, blog.getAuthor().getId());
+
+        response.setAuthor(userMapper.toResponse(blog.getAuthor(),isFollowing));
         response.setBlogStatus(blog.getStatus().name());
         return response;
     }
-
+    private BlogResponse buildResponse(Blog blog) {
+        return buildResponse(blog, null);
+    }
     private List<String> getTagsByBlogId(UUID blogId) {
         return blogTagRepository.findAllByIdBlogId(blogId)
                 .stream()
@@ -210,7 +217,9 @@ public class BlogService {
 
     public BlogResponse getBlogByBlogId(UUID blogId, String currentUserId) {
         Blog blog = findBlog(blogId);
-        BlogResponse response = buildResponse(blog);
+        UUID uid = currentUserId != null ? UUID.fromString(currentUserId) : null;
+
+        BlogResponse response = buildResponse(blog, uid);
         response.setTags(getTagsByBlogId(blogId));
         setLikeInfo(response, blogId, currentUserId);
         return response;

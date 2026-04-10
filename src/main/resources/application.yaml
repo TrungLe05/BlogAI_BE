@@ -74,3 +74,6 @@ aws:
 openrouter:
   api:
     key: ${OPENROUTER_API_KEY}
+firebase:
+  bucket: ${FIREBASE_BUCKET}
+  credentials: ${FIREBASE_CREDENTIALS}

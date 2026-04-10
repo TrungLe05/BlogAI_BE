@@ -1,5 +1,6 @@
 package com.example.blogai.entities;
 
+import com.example.blogai.enums.MessageType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -37,12 +38,23 @@ public class Message {
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    private MessageType type = MessageType.TEXT;
     @NotNull
-    @Column(name = "content", nullable = false, length = Integer.MAX_VALUE)
-    private String content;
 
-    @Column(name = "read_at")
-    private Instant readAt;
+    @Column(name = "content", length = Integer.MAX_VALUE)
+    private String content; // null nếu là file
+
+    // ✅ thêm file fields
+    @Column(name = "file_url")
+    private String fileUrl;
+
+    @Column(name = "file_name")
+    private String fileName;
+
+    @Column(name = "file_size")
+    private Long fileSize;
 
     @NotNull
     @ColumnDefault("now()")

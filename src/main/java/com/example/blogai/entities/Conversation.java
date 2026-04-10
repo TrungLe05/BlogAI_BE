@@ -19,6 +19,14 @@ public class Conversation {
     @Column(name = "id", nullable = false)
     private UUID id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "participant_a", nullable = false)
+    private User participantA;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "participant_b", nullable = false)
+    private User participantB;
+
     @NotNull
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)

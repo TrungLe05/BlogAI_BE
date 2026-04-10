@@ -68,7 +68,13 @@ public enum ErrorCode {
     TAG_EXISTED(7003, "this tag is existed", HttpStatus.BAD_REQUEST),
     INVALID_TAG(7004, "tag invalid", HttpStatus.BAD_REQUEST),
 
-    FILE_TOO_LARGE(8001, "File size exceeds the maximum allowed limit", HttpStatus.CONTENT_TOO_LARGE);
+    FILE_TOO_LARGE(8001, "File size exceeds the maximum allowed limit", HttpStatus.CONTENT_TOO_LARGE),
+
+    CANNOT_FOLLOW_YOURSELF(9001, "you can't follow yourself", HttpStatus.BAD_REQUEST),
+    NOT_MUTUAL_FOLLOW(9002, "user not mutual follow", HttpStatus.BAD_REQUEST),
+    ALREADY_FOLLOWED(9003, "you already followed this user", HttpStatus.BAD_REQUEST),
+    NOT_FOLLOWED(9004, "you not followed this user", HttpStatus.BAD_REQUEST),
+    CHAT_NOT_ALLOWED(9005, "you hasn't been followed this user so can't message with them", HttpStatus.BAD_REQUEST);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

@@ -10,8 +10,10 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserResponse {
+    String id;
     String email;
     String fullName;
     String avatarUrl;
     String role;
+    boolean isFollowing;
 }

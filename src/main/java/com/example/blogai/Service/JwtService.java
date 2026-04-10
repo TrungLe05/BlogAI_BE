@@ -80,13 +80,13 @@ public class JwtService {
         try{
             // parse token
             SignedJWT signedJWT = SignedJWT.parse(token);
+            JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
 
             //verify secret key
             if(!signedJWT.verify(new MACVerifier(secretKey.getBytes()))){
                 throw new AppException(ErrorCode.TOKEN_INVALID);
             }
 
-            JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
 
             // check expiration
             if(claimsSet.getExpirationTime().before(new Date())){
@@ -105,6 +105,4 @@ public class JwtService {
             throw new AppException(ErrorCode.TOKEN_INVALID);
         }
     }
-
-
 }

@@ -6,6 +6,8 @@ import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 @Entity
@@ -27,5 +29,6 @@ public class ConversationParticipant {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-
+    @Column(name = "last_read_at")
+    private Instant lastReadAt;
 }
