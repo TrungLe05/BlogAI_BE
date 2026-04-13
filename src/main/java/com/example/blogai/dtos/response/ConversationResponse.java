@@ -22,5 +22,6 @@ public class ConversationResponse {
     String lastMessage;
     Instant lastMessageAt;
     int unreadCount;
+    String lastMessageSenderId;
 
 }

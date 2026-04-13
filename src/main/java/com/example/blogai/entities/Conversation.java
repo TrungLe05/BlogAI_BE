@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -27,9 +28,9 @@ public class Conversation {
     @JoinColumn(name = "participant_b", nullable = false)
     private User participantB;
 
-    @NotNull
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
+    @CreationTimestamp
     private Instant createdAt;
 
 

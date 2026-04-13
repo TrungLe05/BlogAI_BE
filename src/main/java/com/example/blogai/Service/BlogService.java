@@ -6,11 +6,9 @@ import com.example.blogai.Utils.HtmlImageProcessor;
 import com.example.blogai.dtos.request.CreateBlogRequest;
 import com.example.blogai.dtos.request.UpdateBlogRequest;
 import com.example.blogai.dtos.response.BlogResponse;
-import com.example.blogai.dtos.response.TagStatsResponse;
 import com.example.blogai.entities.*;
 import com.example.blogai.enums.BlogStatus;
 import com.example.blogai.enums.ErrorCode;
-import com.example.blogai.enums.UploadType;
 import com.example.blogai.mapper.BlogMapper;
 import com.example.blogai.mapper.TagMapper;
 import com.example.blogai.mapper.UserMapper;
@@ -37,7 +35,7 @@ public class BlogService {
     BlogsRepository blogsRepository;
     BlogMapper blogMapper;
     UserRepository userRepository;
-    S3Service s3Service;
+    CloudinaryStorageService cloudinaryStorageService;
     UserMapper userMapper;
     TagRepository tagRepository;
     BlogTagRepository blogTagRepository;
@@ -92,7 +90,7 @@ public class BlogService {
     private String uploadCoverImage(MultipartFile file, String blogId) {
         try {
             if (file != null && !file.isEmpty()) {
-                return s3Service.uploadCoverImage(file, blogId); // gọi method mới trong S3Service
+                return cloudinaryStorageService.uploadCoverImage(file, blogId); // gọi method mới trong S3Service
             }
         } catch (IOException e) {
             throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
@@ -250,7 +248,7 @@ public class BlogService {
         // ✅ Update cover image
         String imageUrl = uploadCoverImage(request.getCoverImageUrl(), blogId.toString());
         if (imageUrl != null) {
-            if (blog.getCoverImageUrl() != null) s3Service.delete(blog.getCoverImageUrl());
+            if (blog.getCoverImageUrl() != null) cloudinaryStorageService.delete(blog.getCoverImageUrl());
             blog.setCoverImageUrl(imageUrl);
         }
 
@@ -267,7 +265,7 @@ public class BlogService {
         blogsRepository.deleteById(blogId);
 
         // Xóa toàn bộ ảnh trên S3 chỉ 1 dòng
-        s3Service.deleteBlogFolder(blogId.toString());
+        cloudinaryStorageService.deleteBlogFolder(blogId.toString());
     }
     public BlogResponse publishBlog(UUID blogId) {
         Blog blog = findBlog(blogId);

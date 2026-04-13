@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -20,6 +22,7 @@ import java.util.UUID;
                 columnList = "conversation_id, created_at"),
         @Index(name = "idx_messages_sender",
                 columnList = "sender_id")})
+@ToString
 public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -56,10 +59,13 @@ public class Message {
     @Column(name = "file_size")
     private Long fileSize;
 
-    @NotNull
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead = false;
+
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    @CreationTimestamp
+    private Instant createdAt = Instant.now();
 
 
 }

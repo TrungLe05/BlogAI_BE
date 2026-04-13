@@ -74,7 +74,10 @@ public enum ErrorCode {
     NOT_MUTUAL_FOLLOW(9002, "user not mutual follow", HttpStatus.BAD_REQUEST),
     ALREADY_FOLLOWED(9003, "you already followed this user", HttpStatus.BAD_REQUEST),
     NOT_FOLLOWED(9004, "you not followed this user", HttpStatus.BAD_REQUEST),
-    CHAT_NOT_ALLOWED(9005, "you hasn't been followed this user so can't message with them", HttpStatus.BAD_REQUEST);
+    CHAT_NOT_ALLOWED(9005, "you hasn't been followed this user so can't message with them", HttpStatus.BAD_REQUEST),
+
+    CONVERSATION_NOT_FOUND(10001, "Conversation not found", HttpStatus.NOT_FOUND),
+    MESSAGE_SEND_FAILED(10002, "Failed to send message", HttpStatus.INTERNAL_SERVER_ERROR);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

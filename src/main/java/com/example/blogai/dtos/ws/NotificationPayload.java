@@ -18,4 +18,6 @@ public class NotificationPayload {
      String fromAvatarUrl;
      Object data;       // payload tuỳ theo type
      Instant timestamp;
+     String conversationId; // ← thêm field này để frontend có thể navigate
+
 }

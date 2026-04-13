@@ -12,22 +12,29 @@ import com.example.blogai.mapper.UserMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class FollowService {
       FollowRepository followRepository;
       UserRepository userRepository;
-      ConversationService conversationService;
+      AsyncConversationService asyncConversationService;
       WebSocketService webSocketService;
       UserMapper userMapper;
 
+    @Transactional
     public void follow(UUID followerId, UUID followingId) {
         if (followerId.equals(followingId))
             throw new AppException(ErrorCode.CANNOT_FOLLOW_YOURSELF);
@@ -40,10 +47,14 @@ public class FollowService {
         User following = userRepository.findById(followingId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        Follow follow = new Follow();
-        follow.setFollower(follower);
-        follow.setFollowing(following);
-        followRepository.save(follow);
+        try{
+            Follow follow = new Follow();
+            follow.setFollower(follower);
+            follow.setFollowing(following);
+            followRepository.saveAndFlush(follow);
+        }catch(DataIntegrityViolationException e){
+            throw new AppException(ErrorCode.ALREADY_FOLLOWED);
+        }
 
         // Push notification tới B
         webSocketService.sendToUser(
@@ -59,27 +70,31 @@ public class FollowService {
         );
 
         // Kiểm tra mutual follow → tạo conversation
-        if (followRepository.existsByFollowerIdAndFollowingId(followingId, followerId)) {
-            conversationService.createIfNotExists(followerId, followingId);
+        boolean isMutual = followRepository
+                .existsByFollowerIdAndFollowingId(followingId, followerId);
+        String followerName = follower.getFullName();
 
-            // Notify cả 2: có thể chat rồi
-            NotificationPayload chatUnlocked = NotificationPayload.builder()
-                    .type("CHAT_UNLOCKED")
-                    .fromUserId(followerId.toString())
-                    .fromUserName(follower.getFullName())
-                    .timestamp(Instant.now())
-                    .build();
-
-            webSocketService.sendToUser(followingId, "/queue/notifications", chatUnlocked);
-            webSocketService.sendToUser(followerId, "/queue/notifications", chatUnlocked);
+        if (isMutual) {
+            // Chỉ spawn thread B SAU KHI transaction A commit xong
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            asyncConversationService
+                                    .createConversationAndNotify(followerId, followingId, followerName);
+                        }
+                    }
+            );
         }
     }
 
+    @Transactional
     public void unfollow(UUID followerId, UUID followingId) {
         Follow follow = followRepository
                 .findByFollowerIdAndFollowingId(followerId, followingId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOLLOWED));
         followRepository.delete(follow);
+        followRepository.flush(); // đảm bảo DELETE committed trước khi return
     }
 
     public List<UserResponse> getFollowers(UUID userId) {

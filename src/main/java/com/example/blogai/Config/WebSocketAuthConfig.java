@@ -6,6 +6,7 @@ import com.example.blogai.entities.User;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -20,6 +21,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 import java.util.List;
 
+@Slf4j
 @Configuration
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
@@ -36,7 +38,6 @@ public class WebSocketAuthConfig implements WebSocketMessageBrokerConfigurer {
                 StompHeaderAccessor accessor =
                         MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-                // Chỉ xác thực khi CONNECT
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String authHeader = accessor.getFirstNativeHeader("Authorization");
 
@@ -53,9 +54,10 @@ public class WebSocketAuthConfig implements WebSocketMessageBrokerConfigurer {
 
                         UsernamePasswordAuthenticationToken auth =
                                 new UsernamePasswordAuthenticationToken(
-                                        user, null, List.of()
+                                        user.getId().toString(), null, List.of()
                                 );
-                        accessor.setUser(auth); // gắn user vào session WebSocket
+                        accessor.setUser(auth);
+
                     }
                 }
                 return message;

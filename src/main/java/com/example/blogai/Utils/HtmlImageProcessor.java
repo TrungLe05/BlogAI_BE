@@ -1,6 +1,6 @@
 package com.example.blogai.Utils;
 
-import com.example.blogai.Service.S3Service;
+import com.example.blogai.Service.CloudinaryStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -8,16 +8,13 @@ import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class HtmlImageProcessor {
 
-    private final S3Service s3Service;
+    private final CloudinaryStorageService cloudinaryStorageService;
 
     public String processAndUploadImages(String htmlContent, String userId, String blogId) {
         if (htmlContent == null || htmlContent.isBlank()) return htmlContent;
@@ -39,12 +36,12 @@ public class HtmlImageProcessor {
                     byte[] bytes = Base64.getDecoder().decode(base64Data);
 
                     // Upload theo blogId
-                    String url = s3Service.uploadBytes(bytes, contentType, userId, blogId, "image" + extension);
+                    String url = cloudinaryStorageService.uploadBytes(bytes, contentType, userId, blogId, "image" + extension);
                     img.attr("src", url);
 
-                    log.info("✅ Replaced base64 image → {}", url);
+                    log.info("Replaced base64 image → {}", url);
                 } catch (Exception e) {
-                    log.error("❌ Failed to upload image in content: {}", e.getMessage());
+                    log.error("Failed to upload image in content: {}", e.getMessage());
                 }
             }
         });

@@ -15,7 +15,7 @@ public interface UserMapper {
     UserResponse toResponse(User user, @Context boolean isFollowing);
 
     // ✅ giữ lại overload không cần isFollowing (cho các chỗ không cần check follow)
-    @Mapping(target = "isFollowing", constant = "false")
+//    @Mapping(target = "isFollowing", constant = "false")
     UserResponse toResponse(User user);
 
 

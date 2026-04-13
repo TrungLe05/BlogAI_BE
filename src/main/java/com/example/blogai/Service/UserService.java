@@ -18,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -31,7 +33,8 @@ public class UserService {
 
     PasswordEncoder passwordEncoder;
 
-    S3Service s3Service;
+    CloudinaryStorageService cloudinaryStorageService;
+
     public UserResponse createUser(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTED);
@@ -64,9 +67,9 @@ public class UserService {
             if (request.getAvatarUrl() != null && !request.getAvatarUrl().isEmpty()) {
                 // Xóa avatar cũ
                 if (user.getAvatarUrl() != null) {
-                    s3Service.delete(user.getAvatarUrl());
+                    cloudinaryStorageService.delete(user.getAvatarUrl());
                 }
-                String avatarUrl = s3Service.upload(
+                String avatarUrl = cloudinaryStorageService.upload(
                         request.getAvatarUrl(), user.getId().toString(), UploadType.AVATAR);
                 user.setAvatarUrl(avatarUrl);
                 user.setAvatarCustomized(true);
@@ -90,5 +93,9 @@ public class UserService {
         userMapper.updatePasswordUser(user, request);
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         return userMapper.toResponse(userRepository.save(user));
+    }
+
+    public User findById(UUID id){
+        return userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
     }
 }

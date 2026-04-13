@@ -49,9 +49,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        log.info("accessToken: {}", accessToken);
-        log.info("accessToken: {}", refreshToken);
-
         Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
         accessTokenCookie.setHttpOnly(false); // false để JS đọc được
         accessTokenCookie.setPath("/");

@@ -3,6 +3,7 @@ package com.example.blogai.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "follows", schema = "public")
+@ToString
 public class Follow {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

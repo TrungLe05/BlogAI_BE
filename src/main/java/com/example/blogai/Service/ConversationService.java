@@ -10,6 +10,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -39,14 +41,15 @@ public class ConversationService {
                 .map(conv -> toResponse(conv, currentUserId))
                 .orElseGet(() -> toResponse(createConversation(currentUserId, targetUserId), currentUserId));
     }
+    @Transactional
     public Conversation createIfNotExists(UUID userA, UUID userB) {
         return conversationRepository
                 .findByParticipants(userA, userB)
                 .orElseGet(() -> createConversation(userA, userB));
     }
     private Conversation createConversation(UUID userA, UUID userB) {
-        User a = userRepository.getReferenceById(userA);
-        User b = userRepository.getReferenceById(userB);
+        User a = userRepository.findById(userA).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User b = userRepository.findById(userB).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         Conversation conv = new Conversation();
         conv.setParticipantA(a);
@@ -93,6 +96,7 @@ public class ConversationService {
                 .createdAt(conv.getCreatedAt())
                 .lastMessage(lastMsg != null ? lastMsg.getContent() : null)
                 .lastMessageAt(lastMsg != null ? lastMsg.getCreatedAt() : null)
+                .lastMessageSenderId(lastMsg != null ? lastMsg.getSender().getId().toString() : null)
                 .unreadCount(unreadCount)
                 .build();
     }
