@@ -41,7 +41,6 @@ public class MessageService {
         Conversation conv = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
 
-        // Verify sender là participant
         boolean isParticipant = conv.getParticipantA().getId().equals(senderId)
                 || conv.getParticipantB().getId().equals(senderId);
         if (!isParticipant) throw new AppException(ErrorCode.FORBIDDEN);
@@ -61,7 +60,6 @@ public class MessageService {
             log.info("Debug: {}", e.getMessage());
         }
 
-        // Xác định receiver
         UUID receiverId = conv.getParticipantA().getId().equals(senderId)
                 ? conv.getParticipantB().getId()
                 : conv.getParticipantA().getId();
@@ -77,7 +75,7 @@ public class MessageService {
                 .content(content)
                 .messageType(msg.getType().name())
                 .createdAt(msg.getCreatedAt() != null
-                        ? msg.getCreatedAt().toString()  // ← convert Instant → ISO string
+                        ? msg.getCreatedAt().toString()
                         : Instant.now().toString())
                 .build();
 
@@ -100,7 +98,6 @@ public class MessageService {
     public void markAsRead(UUID conversationId, UUID userId) {
         messageRepository.markAllAsRead(conversationId, userId);
 
-        // Notify sender rằng messages đã được đọc
         Conversation conv = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_FOUND));
 
