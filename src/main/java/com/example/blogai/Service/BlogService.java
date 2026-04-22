@@ -329,5 +329,13 @@ public class BlogService {
         return blog.stream().map(this::buildResponse).toList();
     }
 
+    public List<BlogResponse> getAllBlogPublishByUserId(UUID userId, UUID currentUserId){
+        var blog = blogsRepository.findByAuthorIdAndStatus(userId, BlogStatus.PUBLISHED);
 
+        return blog.stream().map(b -> {
+            var response = buildResponse(b, currentUserId);
+            setLikeInfo(response, b.getId(), currentUserId.toString());
+            return response;
+        }).toList();
+    }
 }

@@ -149,4 +149,11 @@ public class BlogController {
                 .result(blogService.incrementView(blogId, userId))
                 .build();
     }
+
+    @GetMapping("/user/{userId}")
+    public ApiResponse<List<BlogResponse>> getAllBlogPublishByUserId(@PathVariable UUID userId, @AuthenticationPrincipal Jwt jwt){
+        return ApiResponse.<List<BlogResponse>>builder()
+                .result(blogService.getAllBlogPublishByUserId(userId, UUID.fromString(jwt.getSubject())))
+                .build();
+    }
 }

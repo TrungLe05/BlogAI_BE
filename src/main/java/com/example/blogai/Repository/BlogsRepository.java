@@ -30,4 +30,5 @@ public interface BlogsRepository extends JpaRepository<Blog, UUID> {
     List<Blog> getFourBlogMostViewer();
 
 
+
 }
