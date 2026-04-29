@@ -1,4 +1,4 @@
-package com.example.blogai.dtos.request;
+package com.example.blogai.dtos.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -7,7 +7,8 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class IntrospectTokenRequest {
-    String token;
-
+@Builder
+public class TotpSetupResponse {
+    String qrCodeBase64;
+    String totpSecret;
 }

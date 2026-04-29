@@ -6,14 +6,12 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
-@Builder
-@Getter
-@Setter
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-
 public class BlogResponse {
     String blogId;
     String title;

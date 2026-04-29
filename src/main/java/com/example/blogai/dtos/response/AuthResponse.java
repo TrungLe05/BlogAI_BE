@@ -3,8 +3,7 @@ package com.example.blogai.dtos.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -12,4 +11,6 @@ import lombok.experimental.FieldDefaults;
 public class AuthResponse {
     String token;
     String refreshToken;
+    boolean require2FA;
+    String tempToken;
 }

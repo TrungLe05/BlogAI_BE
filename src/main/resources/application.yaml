@@ -64,6 +64,7 @@ jwt:
   secret: 469b524edd8ad0566f436a094ac736a8
   expiration: 3600
   refresh-expiration: 604800
+  temp-expiration: 30000
 openrouter:
   api:
     key: ${OPENROUTER_API_KEY}

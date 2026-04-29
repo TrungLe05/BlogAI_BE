@@ -17,14 +17,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     UserService userService;
 
-    @PostMapping("/register")
-    public ApiResponse<UserResponse> createUser (@RequestBody @Valid RegisterRequest request) {
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.createUser(request))
-                .build();
-
-    }
-
     @GetMapping()
     public ApiResponse<UserResponse> getUser(@RequestParam String email) throws Exception {
         return ApiResponse.<UserResponse>builder()

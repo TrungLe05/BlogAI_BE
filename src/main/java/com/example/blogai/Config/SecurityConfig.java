@@ -2,7 +2,9 @@ package com.example.blogai.Config;
 
 import com.example.blogai.Oauth2.OAuth2AuthenticationFailureHandler;
 import com.example.blogai.Oauth2.OAuth2AuthenticationSuccessHandler;
+import com.example.blogai.Repository.UserRepository;
 import com.example.blogai.Service.CustomOAuth2UserService;
+import com.example.blogai.Service.JwtService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +22,7 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -41,7 +44,8 @@ public class SecurityConfig {
     CustomOAuth2UserService customOAuth2UserService;
     OAuth2AuthenticationSuccessHandler successHandler;
     OAuth2AuthenticationFailureHandler failureHandler;
-
+    JwtService jwtService;
+    UserRepository userRepository;
     CorsConfig corsConfig;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) {
@@ -63,6 +67,10 @@ public class SecurityConfig {
                                 .failureHandler(failureHandler)
                 )
                 .csrf(AbstractHttpConfigurer::disable)
+                .addFilterBefore(
+                        new JwtAuthFilter(jwtService, userRepository),
+                        UsernamePasswordAuthenticationFilter.class
+                )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );

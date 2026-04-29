@@ -35,15 +35,6 @@ public class UserService {
 
     CloudinaryStorageService cloudinaryStorageService;
 
-    public UserResponse createUser(RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTED);
-        }
-        User user = userMapper.toUser(request);
-        user.setPasswordHash(passwordEncoder.encode(request.getPasswordHash()));
-        return userMapper.toResponse(userRepository.save(user));
-    }
-
     public UserResponse getUser(String email) throws Exception {
         var user = userRepository.findByEmail(email).orElseThrow(() -> new Exception("User not existed"));
 

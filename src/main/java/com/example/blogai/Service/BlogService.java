@@ -41,7 +41,7 @@ public class BlogService {
     BlogTagRepository blogTagRepository;
     TagMapper tagMapper;
     HtmlImageProcessor htmlImageProcessor;
-    BlogLikeRepository blogLikeRepository; // ✅ thêm
+    BlogLikeRepository blogLikeRepository;
     BlogViewRepository blogViewRepository;
     FollowRepository followRepository;
 
@@ -109,6 +109,7 @@ public class BlogService {
 
         response.setAuthor(userMapper.toResponse(blog.getAuthor(),isFollowing));
         response.setBlogStatus(blog.getStatus().name());
+        response.setLikeCount(blogLikeRepository.countByIdBlogId(blog.getId()));
         return response;
     }
     private BlogResponse buildResponse(Blog blog) {
@@ -329,5 +330,13 @@ public class BlogService {
         return blog.stream().map(this::buildResponse).toList();
     }
 
+    public List<BlogResponse> getAllBlogPublishByUserId(UUID userId, UUID currentUserId){
+        return blogsRepository.findByAuthorIdAndStatus(userId, BlogStatus.PUBLISHED)
+                .stream().map(b -> {
+                    var response = buildResponse(b, currentUserId);
+                    setLikeInfo(response,b.getId(),currentUserId.toString());
+                    return response;
+                }).toList();
+    }
 
 }

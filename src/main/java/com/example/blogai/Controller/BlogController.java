@@ -5,6 +5,7 @@ import com.example.blogai.dtos.request.CreateBlogRequest;
 import com.example.blogai.dtos.request.UpdateBlogRequest;
 import com.example.blogai.dtos.response.ApiResponse;
 import com.example.blogai.dtos.response.BlogResponse;
+import com.example.blogai.entities.User;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -28,18 +29,18 @@ public class BlogController {
     // ── CREATE ──────────────────────────────────────────────────
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<BlogResponse> saveDraft(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal User user,
             @ModelAttribute @Valid CreateBlogRequest request) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.saveDraft(request, jwt.getSubject()))
+                .result(blogService.saveDraft(request, getUserId(user)))
                 .build();
     }
     @PostMapping(path = "/publish",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<BlogResponse> savePublish(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal User user,
             @ModelAttribute @Valid CreateBlogRequest request) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.savePublish(request, jwt.getSubject()))
+                .result(blogService.savePublish(request, getUserId(user)))
                 .build();
     }
     // ── READ ────────────────────────────────────────────────────
@@ -52,28 +53,37 @@ public class BlogController {
 
     @GetMapping("/draft")
     public ApiResponse<List<BlogResponse>> getAllBlogDraftByAuthor(
-            @AuthenticationPrincipal Jwt jwt) {
+            @AuthenticationPrincipal User user) {
         return ApiResponse.<List<BlogResponse>>builder()
-                .result(blogService.getAllBlogDraft(jwt.getSubject()))
+                .result(blogService.getAllBlogDraft(getUserId(user)))
                 .build();
     }
 
     @GetMapping("/publish")
     public ApiResponse<List<BlogResponse>> getAllBlogPublishByAuthor(
-            @AuthenticationPrincipal Jwt jwt) {
+            @AuthenticationPrincipal User user) {
         return ApiResponse.<List<BlogResponse>>builder()
-                .result(blogService.getAllBlogPublish(jwt.getSubject()))
+                .result(blogService.getAllBlogPublish(getUserId(user)))
                 .build();
     }
 
     @GetMapping("/author")
     public ApiResponse<List<BlogResponse>> getAllBlogByAuthor(
-            @AuthenticationPrincipal Jwt jwt) {
+            @AuthenticationPrincipal User user) {
         return ApiResponse.<List<BlogResponse>>builder()
-                .result(blogService.getAllBlogsByAuthor(jwt.getSubject()))
+                .result(blogService.getAllBlogsByAuthor(getUserId(user)))
                 .build();
     }
 
+    @GetMapping("/user/{userId}")
+    public ApiResponse<List<BlogResponse>> getAllBlogPublishByUserId(
+            @PathVariable UUID userId,
+            @AuthenticationPrincipal User currentUser)
+    {
+        return ApiResponse.<List<BlogResponse>>builder()
+                .result(blogService.getAllBlogPublishByUserId(userId,currentUser.getId()))
+                .build();
+    }
     @GetMapping("/related")
     public ApiResponse<List<BlogResponse>> getBlogRelatedByTags(
             @RequestParam Set<String> tags,
@@ -93,10 +103,9 @@ public class BlogController {
     @GetMapping("/{blogId}")
     public ApiResponse<BlogResponse> getBlogById(
             @PathVariable UUID blogId,
-            @AuthenticationPrincipal Jwt jwt) {
-        String userId = jwt != null ? jwt.getSubject() : null;
+            @AuthenticationPrincipal User user) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.getBlogByBlogId(blogId, userId))
+                .result(blogService.getBlogByBlogId(blogId, getUserId(user)))
                 .build();
     }
 
@@ -133,20 +142,23 @@ public class BlogController {
     @PostMapping("/{blogId}/like")
     public ApiResponse<BlogResponse> toggleLike(
             @PathVariable UUID blogId,
-            @AuthenticationPrincipal Jwt jwt) {
+            @AuthenticationPrincipal User user) {
         return ApiResponse.<BlogResponse>builder()
-                .result(blogService.toggleLike(blogId, jwt.getSubject()))
+                .result(blogService.toggleLike(blogId, getUserId(user)))
                 .build();
     }
 
-    // ✅ Trả về int — chỉ viewCount mới, không cần full BlogResponse
+    // Trả về int — chỉ viewCount mới, không cần full BlogResponse
     @PostMapping("/{blogId}/view")
     public ApiResponse<Integer> incrementView(
             @PathVariable UUID blogId,
-            @AuthenticationPrincipal Jwt jwt) {
-        String userId = jwt != null ? jwt.getSubject() : null;
+            @AuthenticationPrincipal User user) {
         return ApiResponse.<Integer>builder()
-                .result(blogService.incrementView(blogId, userId))
+                .result(blogService.incrementView(blogId, getUserId(user)))
                 .build();
+    }
+
+    private String getUserId(User user){
+        return user.getId().toString();
     }
 }

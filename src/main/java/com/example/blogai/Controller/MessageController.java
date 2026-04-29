@@ -4,6 +4,7 @@ import com.example.blogai.Service.MessageService;
 import com.example.blogai.dtos.response.ApiResponse;
 import com.example.blogai.dtos.response.MessageResponse;
 import com.example.blogai.dtos.ws.SendMessageRequest;
+import com.example.blogai.entities.User;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,24 +26,24 @@ public class MessageController {
     MessageService messageService;
 
     @GetMapping("{conversationId}")
-    public ApiResponse<List<MessageResponse>> getMessages(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID conversationId){
+    public ApiResponse<List<MessageResponse>> getMessages(@AuthenticationPrincipal User user, @PathVariable UUID conversationId){
         return ApiResponse.<List<MessageResponse>>builder()
                 .result(messageService.getMessages(
                         conversationId,
-                        UUID.fromString(jwt.getSubject()))
+                        user.getId())
                 )
                 .build();
     }
 
     @PostMapping("/{conversationId}")
     public ApiResponse<MessageResponse> send(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal User user,
             @PathVariable UUID conversationId,
             @RequestBody SendMessageRequest request
     ){
         return ApiResponse.<MessageResponse>builder()
                 .result(messageService.sendMessage(
-                        UUID.fromString(jwt.getSubject()),
+                        user.getId(),
                         conversationId,
                         request.getContent(),
                         request.getType()
@@ -52,9 +53,9 @@ public class MessageController {
 
     @PatchMapping("/{conversationId}/read")
     public ApiResponse<Void> markAsRead(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal User user,
             @PathVariable UUID conversationId) {
-        messageService.markAsRead(conversationId, UUID.fromString(jwt.getSubject()));
+        messageService.markAsRead(conversationId, user.getId());
         return ApiResponse.<Void>builder().message("Marked as read").build();
     }
 }

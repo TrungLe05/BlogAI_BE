@@ -19,7 +19,10 @@ public enum ErrorCode {
     NOT_BLANK(1007, "This field isn't blank", HttpStatus.BAD_REQUEST),
     // ===== VALIDATION =====
     VALIDATION_ERROR(1010, "Validation failed", HttpStatus.BAD_REQUEST),
-
+    INVALID_OTP(1011, "invalid otp", HttpStatus.BAD_REQUEST),
+    TOTP_ALREADY_ENABLED(1012, "you already enable 2FA before", HttpStatus.BAD_REQUEST),
+    TOTP_NOT_SETUP(1013, "TOTP not set up before", HttpStatus.BAD_REQUEST),
+    TOTP_NOT_ENABLED(1014, "TOTP not enabled before", HttpStatus.BAD_REQUEST),
     // ===== USER =====
     USER_NOT_EXISTED(2001, "User not found", HttpStatus.NOT_FOUND),
     USER_ALREADY_EXISTED(2002, "User already exists", HttpStatus.CONFLICT),

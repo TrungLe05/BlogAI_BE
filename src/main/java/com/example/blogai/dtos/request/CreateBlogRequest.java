@@ -8,11 +8,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Set;
 
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CreateBlogRequest {
     @NotNull(message = "BLOG_TITLE_REQUIRED")
     String title;

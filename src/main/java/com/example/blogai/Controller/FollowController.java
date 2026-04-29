@@ -8,9 +8,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,9 +27,9 @@ public class FollowController {
 
     @PostMapping("/{targetUserId}")
     public ApiResponse<Void> follow(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal User user,
             @PathVariable UUID targetUserId) {
-        followService.follow(UUID.fromString(jwt.getSubject()), targetUserId);
+        followService.follow(user.getId(), targetUserId);
         return ApiResponse.<Void>builder()
                 .message("Followed successfully")
                 .build();
@@ -39,9 +37,9 @@ public class FollowController {
 
     @DeleteMapping("/{targetUserId}")
     public ApiResponse<Void> unfollow(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal User user,
             @PathVariable UUID targetUserId) {
-        followService.unfollow(UUID.fromString(jwt.getSubject()), targetUserId);
+        followService.unfollow(user.getId(), targetUserId);
         return ApiResponse.<Void>builder()
                 .message("Unfollowed successfully")
                 .build();
@@ -49,17 +47,17 @@ public class FollowController {
 
     @GetMapping("/followers")
     public ApiResponse<List<UserResponse>> getFollowers(
-            @AuthenticationPrincipal Jwt jwt) {
+            @AuthenticationPrincipal User user) {
         return ApiResponse.<List<UserResponse>>builder()
-                .result(followService.getFollowers(UUID.fromString(jwt.getSubject())))
+                .result(followService.getFollowers(user.getId()))
                 .build();
     }
 
     @GetMapping("/following")
     public ApiResponse<List<UserResponse>> getFollowing(
-            @AuthenticationPrincipal Jwt jwt) {
+            @AuthenticationPrincipal User user) {
         return ApiResponse.<List<UserResponse>>builder()
-                .result(followService.getFollowing(UUID.fromString(jwt.getSubject())))
+                .result(followService.getFollowing(user.getId()))
                 .build();
     }
 }

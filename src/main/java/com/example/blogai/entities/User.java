@@ -76,4 +76,11 @@ public class User {
     @ColumnDefault("false")
     @Column(name = "avatar_customized", nullable = false)
     private boolean avatarCustomized = false;
+
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    @ColumnDefault("false")
+    @Column(name = "totp_verified", nullable = false)
+    private boolean totpVerified = false;
 }

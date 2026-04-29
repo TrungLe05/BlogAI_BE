@@ -10,6 +10,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -40,15 +41,22 @@ public class JwtService {
     @Value("${jwt.refresh-expiration}")
     long refreshExpiration;
 
+    @NonFinal
+    @Value("${jwt.temp-expiration}")
+    long tempExpiration;
 
     InvalidatedTokenRepository invalidatedTokenRepository;
 
     public String generateToken(User user){
-        return buildToken(user, expiration,"access");
+        return buildToken(user, expiration,"ACCESS");
     }
 
     public String generateRefreshToken(User user){
-        return buildToken(user, refreshExpiration,"refresh");
+        return buildToken(user, refreshExpiration,"REFRESH");
+    }
+
+    public String generateTempToken(User user){
+        return buildToken(user, tempExpiration, "TEMP_2FA");
     }
 
     private String buildToken(User user,long expirationTime, String type) {
@@ -104,5 +112,28 @@ public class JwtService {
         } catch (Exception e) {
             throw new AppException(ErrorCode.TOKEN_INVALID);
         }
+    }
+
+    // Lấy userId từ token
+    public String extractUserId(String token) {
+        return verifyToken(token).getSubject();
+    }
+
+    // Lấy tokenType từ token
+    public String extractTokenType(String token) {
+        try {
+            return verifyToken(token).getStringClaim("tokenType");
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+    }
+
+    // JwtService.java
+    public JWTClaimsSet extractClaimsFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        return verifyToken(authHeader.substring(7));
     }
 }

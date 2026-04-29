@@ -25,22 +25,22 @@ public class ConversationController {
     // Mở hoặc tạo conversation (lazy creation)
     @PostMapping("/open")
     public ResponseEntity<ApiResponse<ConversationResponse>> open(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal User user,
             @RequestParam UUID targetUserId) {
         return ResponseEntity.ok(ApiResponse.<ConversationResponse>builder()
                 .code(200)
                 .result(conversationService.openConversation(
-                        UUID.fromString(jwt.getSubject()), targetUserId))
+                        user.getId(), targetUserId))
                 .build());
     }
 
     // Danh sách conversation của user
     @GetMapping
     public ApiResponse<List<ConversationResponse>> getAll(
-            @AuthenticationPrincipal Jwt jwt) {
+            @AuthenticationPrincipal User user) {
         return ApiResponse.<List<ConversationResponse>>builder()
                 .code(200)
-                .result(conversationService.getConversations(UUID.fromString(jwt.getSubject())))
+                .result(conversationService.getConversations(user.getId()))
                 .build();
     }
 }
