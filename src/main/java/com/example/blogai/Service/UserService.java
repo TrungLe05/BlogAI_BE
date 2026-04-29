@@ -1,6 +1,7 @@
 package com.example.blogai.Service;
 
 import com.example.blogai.Exception.AppException;
+import com.example.blogai.Repository.FollowRepository;
 import com.example.blogai.Repository.UserRepository;
 import com.example.blogai.dtos.request.RegisterRequest;
 import com.example.blogai.dtos.request.ChangePasswordRequest;
@@ -35,10 +36,19 @@ public class UserService {
 
     CloudinaryStorageService cloudinaryStorageService;
 
-    public UserResponse getUser(String email) throws Exception {
-        var user = userRepository.findByEmail(email).orElseThrow(() -> new Exception("User not existed"));
+    FollowRepository followRepository;
+    public UserResponse createUser(RegisterRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTED);
+        }
+        User user = userMapper.toUser(request);
+        user.setPasswordHash(passwordEncoder.encode(request.getPasswordHash()));
+        return userMapper.toResponse(userRepository.save(user));
+    }
 
-        return userMapper.toResponse(user);
+    public UserResponse getUser(UUID userId, UUID currentUserId) {
+        var user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return userMapper.toResponse(user, followRepository.existsByFollowerIdAndFollowingId(userId, currentUserId));
     }
 
     public UserResponse getMe(String email){

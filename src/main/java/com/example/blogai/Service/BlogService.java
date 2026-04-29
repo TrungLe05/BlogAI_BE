@@ -109,7 +109,6 @@ public class BlogService {
 
         response.setAuthor(userMapper.toResponse(blog.getAuthor(),isFollowing));
         response.setBlogStatus(blog.getStatus().name());
-        response.setLikeCount(blogLikeRepository.countByIdBlogId(blog.getId()));
         return response;
     }
     private BlogResponse buildResponse(Blog blog) {
