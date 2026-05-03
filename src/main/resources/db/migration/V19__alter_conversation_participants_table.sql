@@ -1,0 +1,2 @@
+ALTER TABLE conversation_participants
+    ADD COLUMN last_read_at TIMESTAMP;

@@ -54,7 +54,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         Oauth2UserInfo userInfo = Oauth2UserInfoFactory.getOauth2UserInfo(registrationId, attributes);
-        log.info("user info {}", userInfo.toString());
         if (userInfo.getEmail() == null || userInfo.getEmail().isBlank()) {
             throw new OAuth2AuthenticationException(
                     new OAuth2Error("email_not_found"),
@@ -66,10 +65,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                         updateExistingUser(existingUser, userInfo)
                 ).orElseGet(() -> registerNewUser(userInfo, registrationId));
 
+        String nameAttributeKey = userRequest
+                .getClientRegistration()
+                .getProviderDetails()
+                .getUserInfoEndpoint()
+                .getUserNameAttributeName();
+
+
         return new DefaultOAuth2User(
                 oAuth2User.getAuthorities(),
                 attributes,
-                "id"  // attribute dùng làm name
+                nameAttributeKey  // attribute dùng làm name
         );
     }
 
@@ -86,7 +92,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private User updateExistingUser(User user, Oauth2UserInfo userInfo) {
         user.setFullName(userInfo.getName());
-        user.setAvatarUrl(userInfo.getAvatarUrl());
+        if (!user.isAvatarCustomized()) {
+            user.setAvatarUrl(userInfo.getAvatarUrl());
+        }
         return userRepository.save(user);
     }
 

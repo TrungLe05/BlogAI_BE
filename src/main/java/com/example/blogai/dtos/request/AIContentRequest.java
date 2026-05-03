@@ -1,0 +1,23 @@
+package com.example.blogai.dtos.request;
+
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class AIContentRequest {
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private String content;
+
+    public String getCleanContent() {
+        if (content == null) return "";
+        return content
+                .replace("\r\n", "\n")
+                .replace("\r", "\n")
+                .replaceAll("[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]", ""); // xóa toàn bộ control chars
+    }
+}

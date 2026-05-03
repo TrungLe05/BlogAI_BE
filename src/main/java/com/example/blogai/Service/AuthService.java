@@ -6,27 +6,32 @@ import com.example.blogai.Repository.UserRepository;
 import com.example.blogai.dtos.request.IntrospectTokenRequest;
 import com.example.blogai.dtos.request.LoginRequest;
 import com.example.blogai.dtos.request.RefreshTokenRequest;
+import com.example.blogai.dtos.request.RegisterRequest;
 import com.example.blogai.dtos.response.AuthResponse;
 import com.example.blogai.dtos.response.IntrospectResponse;
 import com.example.blogai.dtos.response.UserResponse;
 import com.example.blogai.entities.InvalidatedToken;
+import com.example.blogai.entities.User;
 import com.example.blogai.enums.ErrorCode;
 import com.example.blogai.mapper.UserMapper;
 import com.nimbusds.jwt.JWTClaimsSet;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.time.Instant;
 import java.util.UUID;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-
+@Slf4j
 public class AuthService {
 
     JwtService jwtService;
@@ -35,10 +40,23 @@ public class AuthService {
 
     PasswordEncoder passwordEncoder;
 
+    InvalidatedTokenRepository invalidatedTokenRepository;
+
+    TotpService totpService;
+
     UserMapper userMapper;
 
-    private final InvalidatedTokenRepository invalidatedTokenRepository;
+    RecoveryCodeService recoveryCodeService;
+    public UserResponse register(RegisterRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTED);
+        }
+        User user = userMapper.toUser(request);
+        user.setPasswordHash(passwordEncoder.encode(request.getPasswordHash()));
+        return userMapper.toResponse(userRepository.save(user));
+    }
 
+    // Login step 1: Verify email and password
     public AuthResponse login(LoginRequest request){
         var user = userRepository.findByEmail(
                 request.getEmail()).orElseThrow(
@@ -49,6 +67,52 @@ public class AuthService {
             throw new AppException(ErrorCode.PASSWORD_INCORRECT);
         }
 
+        if(user.isTotpVerified()){
+            return AuthResponse.builder()
+                    .require2FA(true)
+                    .tempToken(jwtService.generateTempToken(user))
+                    .build();
+        }
+
+        return AuthResponse.builder()
+                .token(jwtService.generateToken(user))
+                .refreshToken(jwtService.generateRefreshToken(user))
+                .build();
+    }
+
+    // Login step 2: verify OTP
+    public AuthResponse verifyLoginOtp(String tempToken, String otpCode) {
+        JWTClaimsSet jwtClaimsSet;
+        // verify token
+        try{
+            jwtClaimsSet = jwtService.verifyToken(tempToken);
+
+        }catch(AppException e){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+        // verify type token must be tempToken(TEMP_2FA)
+        String tokenType = jwtService.extractTokenType(tempToken);
+        if(!"TEMP_2FA".equals(tokenType)){
+            throw new AppException(ErrorCode.TOKEN_INVALID);
+        }
+
+        UUID userId = UUID.fromString(jwtClaimsSet.getSubject());
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+
+        boolean verified;
+
+        // Recovery code có dạng XXXX-XXXX-XXXX, không phải 6 chữ số
+        if (otpCode.contains("-") || otpCode.length() > 6) {
+            verified = recoveryCodeService.verifyAndConsume(user, otpCode);
+        } else {
+            // OTP thông thường
+            verified = totpService.verifyCode(user.getTotpSecret(), otpCode);
+        }
+
+        if (!verified) throw new AppException(ErrorCode.INVALID_OTP);
+
         return AuthResponse.builder()
                 .token(jwtService.generateToken(user))
                 .refreshToken(jwtService.generateRefreshToken(user))
@@ -56,12 +120,14 @@ public class AuthService {
     }
 
 
-    public void logout(String jwtId, Instant expirationTime){
+    public void logout(HttpServletRequest request){
+        JWTClaimsSet claims = jwtService.extractClaimsFromRequest(request);
+
 
         invalidatedTokenRepository.save(
                 InvalidatedToken.builder()
-                        .id(jwtId)
-                        .expiryTime(expirationTime)
+                        .id(claims.getJWTID())
+                        .expiryTime(Instant.parse(claims.getExpirationTime().toString()))
                         .build()
         );
     }
@@ -108,9 +174,5 @@ public class AuthService {
     }
 
 
-    public UserResponse getMe(String email){
-        var user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        return userMapper.toResponse(user);
-    }
 }
