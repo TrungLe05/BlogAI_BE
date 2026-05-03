@@ -61,7 +61,7 @@ public class TotpService {
 
     public boolean verifyCode(String secret, String inputCode) {
         long timeStep = System.currentTimeMillis() / 1000L / 30;
-        for (int delta = -1; delta <= 1; delta++) {
+        for (int delta = -1; delta <= 2; delta++) {
             try {
                 if (generateTotp(secret, timeStep + delta).equals(inputCode)) {
                     return true;

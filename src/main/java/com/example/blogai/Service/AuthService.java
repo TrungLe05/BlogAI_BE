@@ -20,6 +20,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,7 @@ import java.util.UUID;
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-
+@Slf4j
 public class AuthService {
 
     JwtService jwtService;
@@ -45,6 +46,7 @@ public class AuthService {
 
     UserMapper userMapper;
 
+    RecoveryCodeService recoveryCodeService;
     public UserResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new AppException(ErrorCode.EMAIL_ALREADY_EXISTED);
@@ -98,9 +100,18 @@ public class AuthService {
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        if(!totpService.verifyCode(user.getTotpSecret(), otpCode)){
-            throw new AppException(ErrorCode.INVALID_OTP);
+
+        boolean verified;
+
+        // Recovery code có dạng XXXX-XXXX-XXXX, không phải 6 chữ số
+        if (otpCode.contains("-") || otpCode.length() > 6) {
+            verified = recoveryCodeService.verifyAndConsume(user, otpCode);
+        } else {
+            // OTP thông thường
+            verified = totpService.verifyCode(user.getTotpSecret(), otpCode);
         }
+
+        if (!verified) throw new AppException(ErrorCode.INVALID_OTP);
 
         return AuthResponse.builder()
                 .token(jwtService.generateToken(user))

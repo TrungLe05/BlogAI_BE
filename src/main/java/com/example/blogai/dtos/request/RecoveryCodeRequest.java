@@ -1,7 +1,6 @@
 package com.example.blogai.dtos.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,11 +11,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class VerifyLoginOtpRequest {
-    @NotBlank(message = "NOT_BLANK")
-    String tempToken;
-    @NotBlank(message = "NOT_BLANK")
-    @Size(min=6)
-    String otpCode; // otpCode or recovery code
-
+public class RecoveryCodeRequest {
+    @NotBlank
+    String recoveryCode;
 }
