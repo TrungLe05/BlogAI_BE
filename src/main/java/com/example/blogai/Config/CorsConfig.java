@@ -15,7 +15,7 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 //        config.setAllowedOrigins(List.of("http://localhost:5173")); // dev environment
-        config.setAllowedOrigins(List.of("https://blog-ai-bbedirviz-trungle05s-projects.vercel.app/")); // production environment
+        config.setAllowedOrigins(List.of("blog-ai-fe.vercel.app")); // production environment
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
